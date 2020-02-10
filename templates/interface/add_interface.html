@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}新建接口{% endblock %}
+{% block css %}
+    <link href="{% static 'css/interface/add-project-style.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+{% endblock %}
+{% block menu %}
+<ul class="nav navbar-nav">
+    <li class="active"><a href="/index/">主页</a></li>
+    <li class="active"><a href="/monitor/">数据监控</a></li>
+    <li class="active"><a href="/interface/">接口测试</a></li>
+    <li class="active"><a href="/performance/">性能测试</a></li>
+    <li class="active"><a href="/tool/">测试工具</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+        <div class="col-md-10 col-md-offset-1">
+          <form class='form-interface-add' action="/interface/addInterfaces" method="POST">
+              {% csrf_token %}
+              <!--<h2 class="text-center">新建项目</h2>-->
+              <div class="form-group addRedStar" >
+                  {{ interface_form.interface_name.label_tag }}
+                  {{ interface_form.interface_name }}
+              </div>
+              <div class="form-group addRedStar">
+                  {{ interface_form.interface_category_id.label_tag }}
+                  {{ interface_form.interface_category_id }}
+              </div>
+              <div class="form-group">
+                  {{ interface_form.interface_desc.label_tag }}
+                  {{ interface_form.interface_desc }}
+              </div>
+              <div class="form-group addRedStar">
+                  {{ interface_form.interface_address.label_tag }}
+                  {{ interface_form.interface_address }}
+              </div>
+              <div class="form-group">
+                  {{ interface_form.interface_request_type.label_tag }}
+                  {{ interface_form.interface_request_type }}
+              </div>
+              <div class="form-group">
+                  {{ interface_form.interface_headers.label_tag }}
+                  {{ interface_form.interface_headers }}
+              </div>
+              <div class="form-group">
+                  {{ interface_form.interface_parameters.label_tag }}
+                  {{ interface_form.interface_parameters }}
+              </div>
+              <div class="form-group">
+                  {{ interface_form.interface_body.label_tag }}
+                  {{ interface_form.interface_body }}
+              </div>
+              <div class="form-group">
+                  {{ interface_form.interface_status.label_tag }}
+                  {{ interface_form.interface_status }}
+              </div>
+              <button type="submit" class="btn btn-primary pull-left">新建接口</button>
+              <span class="btn btn-primary pull-right" id="addInterfaceCancel" onclick="navigate_html()">取消</span>
+          </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    <!--interface_group_category = {}-->
+    <!--$.get("/interface/getAllInterfaceGroup",-->
+        <!--function(resultDict)-->
+        <!--{-->
+            <!--interface_group_category = resultDict;-->
+            <!--console.log("interface_group_category", interface_group_category)-->
+            <!--var update_project_category_value = null;-->
+            <!--for(var key in interface_group_category)-->
+            <!--{-->
+                <!--interface_group_category_value = "<option value='" + key + "'>" + interface_group_category[key] + "</option>";-->
+                <!--$("#id_interface_category").append(interface_group_category_value);-->
+
+            <!--}-->
+         <!--},-->
+        <!--"json"-->
+    <!--);-->
+
+</script>
+<script type="text/javascript">
+    function alertFunction(data){
+	    alert(data);
+    }
+    {% if message %}
+       alertFunction("{{ message }}")
+    {% endif %}
+    function navigate_html() {
+        window.location.href="interfaceList";
+    }
+</script>
+{% endblock%}
+

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8">
+        <title>卡片效果</title>
+        <link href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <style type="text/css">
+            .screen-box{
+    margin: 0 20px;
+    background: #fff;
+    border: 1px solid #DFDFDF;
+    margin-top: 20px;
+    height: 50px;
+    line-height: 50px;
+}
+.screen-box .date-box {
+    float: left;
+    padding-top: 10px;
+    margin-right: 10px;
+}
+.screen-box .date-box .wn-input {
+    width: 110px;
+    float: left;
+    height: 28px;
+    text-align: center;
+}
+.screen-box .search-btn {
+    display: block;
+    float: left;
+    margin: 10px 5px;
+    border-radius: 3px;
+    line-height: 30px;
+    height: 30px;
+    background-color: #ff5d49;
+    padding: 0 20px;
+}
+.screen-box .date-box .text {
+    float: left;
+    height: 30px;
+    line-height: 30px;
+    width: 30px;
+    text-align: center;
+}
+.pull-left{
+    float: left;
+}
+.pull-right{
+    float: right;
+}
+.tl-h32{
+    height: 32px;
+
+}
+.tl-p-left-10{
+    padding-left: 10px;
+}
+.tl-btn{
+    padding: 5px 15px;
+    background-color: #ffe7e3;
+    border: 1px solid #ff5d49;
+    color: #ff5d49;
+    border-radius: 5px;
+    margin-left: 10px;
+    transition: box-shadow .2s;
+}
+.tl-btn-red{
+    padding: 5px 15px;
+    background-color: #ff5d49;
+    border: 1px solid #ff5d49;
+    color: #fff;
+    font-size:12px;
+    border-radius: 5px;
+    margin-left: 10px;
+    transition: box-shadow .2s;
+}
+.tl-btn-white{
+    padding: 5px 15px;
+    background-color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    color: #333333;
+    font-size:12px;
+    border-radius: 5px;
+    margin-left: 10px;
+    transition: box-shadow .2s;
+}
+.tl-card{
+    width:30%;
+    height:100px;
+    border-radius:6px;
+    float: left;
+    margin-right: 17px;
+    margin-bottom: 20px;
+}
+.tl-p10{
+    padding: 22px 20px;
+}
+.tl-img-left{
+    width: 56px;
+    height: 56px;
+    display: inline-block;
+    float: left;
+}
+
+.tl-color-0{
+    background: linear-gradient(to left, #FAD0C4 , #FF9A9E);
+}
+.tl-color-1{
+    background: linear-gradient(to left, #F6D365 , #F6A085);
+}
+.tl-color-2{
+    background: linear-gradient(to left, #C2E9FB , #A1C4FD);
+}
+.tl-color-3{
+    background: linear-gradient(to left, #1E90FF , #104E8B);
+}
+.tl-color-4{
+    background: linear-gradient(to left, #63B8FF , #36648B);
+}
+.tl-color-5{
+    background: linear-gradient(to left, #00BFFF , #00688B);
+}
+.tl-color-6{
+    background: linear-gradient(to left, #87CEFF , #4A708B);
+}
+.tl-color-7{
+    background: linear-gradient(to left, #B0E2FF , #607B8B);
+}
+.tl-color-8{
+    background: linear-gradient(to left, #C6E2FF , #6C7B8B);
+}
+.tl-color-9{
+    background: linear-gradient(to left, #CAE1FF , #6E7B8B);
+}
+.tl-color-10{
+    background: linear-gradient(to left, #BFEFFF , #68838B);
+}
+.tl-color-11{
+    background: linear-gradient(to left, #E0FFFF , #7A8B8B);
+}
+.tl-color-12{
+    background: linear-gradient(to left, #BBFFFF , #668B8B);
+}
+.tl-color-13{
+    background: linear-gradient(to left, #54FF9F , #2E8B57);
+}
+.tl-color-14{
+    background: linear-gradient(to left, #7FFFD4 , #458B74);
+}
+
+
+.tl-font-16{
+    font-size:16px;
+    font-family:'PingFang-SC-Bold';
+    font-weight:bold;
+    color: #ffffff;
+}
+.tl-font-14{
+    font-size:14px;
+    font-family:'PingFang-SC-Bold';
+    font-weight:bold;
+    color: #ffffff;
+}
+
+        </style>
+    </head>
+<body>
+        <div class="expend-table-box" style="margin-top: 0">
+        <div class="tl-card tl-color-3">
+            <div class="tl-p10">
+                <img src="/assets/img/cardPayIcon.png" alt="" class="tl-img-left">
+                <div class="tl-title">
+                    <div class="tl-font-16 tl-h32">
+                        <span class="tl-p-left-10">我是次卡的名称</span>
+                        <button class="tl-btn-red pull-right">编辑</button>
+                    </div>
+                    <div class="tl-font-14 tl-h32">
+                        <span class="tl-p-left-10">关联的服务</span>
+                        <button class="tl-btn-white pull-right">删除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tl-card tl-color-4">
+            <div class="tl-p10">
+                <img src="/assets/img/cardPayIcon.png" alt="" class="tl-img-left">
+                <div class="tl-title">
+                    <div class="tl-font-16 tl-h32">
+                        <span class="tl-p-left-10">我是次卡的名称</span>
+                        <button class="tl-btn-red pull-right">编辑</button>
+                    </div>
+                    <div class="tl-font-14 tl-h32">
+                        <span class="tl-p-left-10">关联的服务</span>
+                        <button class="tl-btn-white pull-right">删除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tl-card tl-color-5">
+            <div class="tl-p10">
+                <img src="/assets/img/cardPayIcon.png" alt="" class="tl-img-left">
+                <div class="tl-title">
+                    <div class="tl-font-16 tl-h32">
+                        <span class="tl-p-left-10">我是次卡的名称</span>
+                        <button class="tl-btn-red pull-right">编辑</button>
+                    </div>
+                    <div class="tl-font-14 tl-h32">
+                        <span class="tl-p-left-10">关联的服务</span>
+                        <button class="tl-btn-white pull-right">删除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tl-card tl-color-13">
+            <div class="tl-p10">
+                <img src="/assets/img/cardPayIcon.png" alt="" class="tl-img-left">
+                <div class="tl-title">
+                    <div class="tl-font-16 tl-h32">
+                        <span class="tl-p-left-10">我是次卡的名称</span>
+                        <button class="tl-btn-red pull-right">编辑</button>
+                    </div>
+                    <div class="tl-font-14 tl-h32">
+                        <span class="tl-p-left-10">关联的服务</span>
+                        <button class="tl-btn-white pull-right">删除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tl-card tl-color-14">
+            <div class="tl-p10">
+                <img src="/assets/img/cardPayIcon.png" alt="" class="tl-img-left">
+                <div class="tl-title">
+                    <div class="tl-font-16 tl-h32">
+                        <span class="tl-p-left-10">我是次卡的名称</span>
+                        <button class="tl-btn-red pull-right">编辑</button>
+                    </div>
+                    <div class="tl-font-14 tl-h32">
+                        <span class="tl-p-left-10">关联的服务</span>
+                        <button class="tl-btn-white pull-right">删除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+    </div>
+
+    </body>
+
+
+</html>

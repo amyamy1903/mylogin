@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}性能测试{% endblock %}
+{% block css %}
+{% load staticfiles %}
+<link href="{% static 'css/gradation.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+<link href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.css" rel="stylesheet">
+<link href="{% static 'css/interface/style.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
+<link href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
+<script src="{% static 'js/sidebar.js' %}"></script>
+{% endblock %}
+{% block menu %}
+<ul class="nav navbar-nav">
+    <li class="active"><a href="/index/">主页</a></li>
+    <li class="active"><a href="/monitor/">数据监控</a></li>
+    <li class="active"><a href="/interface/">接口测试</a></li>
+    <li class="active"><a href="/performance/">性能测试</a></li>
+    <li class="active"><a href="/tool/">测试工具</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <li class="nav-item active">
+            <a class="nav-link" href="/performance">
+              <span class="menu-title">面板</span>
+                <i class="glyphicon glyphicon-home"></i>
+            </a>
+          </li>
+
+        <!--<li class="nav-item">-->
+            <!--<a class="nav-link" href="/tool/dataFactory">-->
+              <!--<span class="menu-title">数据工厂</span>-->
+                <!--<i class="glyphicon glyphicon-th-list"></i>-->
+            <!--</a>-->
+        <!--</li>-->
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#data-factory">
+              <span class="menu-title">保留</span>
+                <i class="glyphicon glyphicon-chevron-right"></i>
+            </a>
+            <div class="collapse" id="data-factory">
+                <ul>
+                    <li class="nav-item"> <a class="nav-link" href="/performance/example1">example1</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/performance/example2">example2</a></li>
+                </ul>
+            </div>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/performance/performance1">
+                <span class="menu-title">保留1</span>
+                <i class="glyphicon glyphicon-th"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/performance/performance2">
+                <span class="menu-title">保留2</span>
+                <i class="glyphicon glyphicon-th-large"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/performance/performance3">
+                <span class="menu-title">保留3</span>
+                <i class="glyphicon glyphicon-align-left"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+<div class="center">
+    <iframe src="http://localhost:8089/"  width="1000" scrolling="No" height="1200" ></iframe>
+    <!--<iframe src="http://localhost:8089/" frameborder="0" width="300" scrolling="No" height="200" leftmargin="0" topmargin="0"></iframe>-->
+    <!--<form action="http://localhost:8089/">-->
+			<!--<input type="text" name="wd"/><input type="submit"  value="百度一下"/>-->
+		<!--</form>-->
+</div>
+
+<!--<div class="right">-->
+    <!--<div class="leaderboard">-->
+        <!--<h1>Learn. Practice. Develop.</h1>-->
+    <!--</div>-->
+    <!--<hr>-->
+    <!--<footer class="footer">-->
+        <!--<p>Copyright © Shuyun All Rights Reserved</p>-->
+    <!--</footer>-->
+
+
+<!--</div>-->
+<!--<footer class="footer">-->
+    <!--<p>Copyright © Shuyun All Rights Reserved.</p>-->
+<!--</footer>-->
+{% endblock %}
+
+

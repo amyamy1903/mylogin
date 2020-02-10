@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}测试工具{% endblock %}
+{% block css %}
+{% load staticfiles %}
+<link href="{% static 'css/index_style.css' %}" rel="stylesheet">
+{% endblock %}
+{% block menu %}
+<ul class="nav navbar-nav">
+    <li class="active"><a href="/index/">主页</a></li>
+    <li class="active"><a href="/monitor/">数据监控</a></li>
+    <li class="active"><a href="/interface/">接口测试</a></li>
+    <li class="active"><a href="/performance/">性能测试</a></li>
+    <li class="active"><a href="/tool/">测试工具</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <li class="nav-item active">
+            <a class="nav-link" href="/tool">
+              <span class="menu-title">面板</span>
+                <i class="glyphicon glyphicon-home"></i>
+            </a>
+          </li>
+
+        <!--<li class="nav-item">-->
+            <!--<a class="nav-link" href="/tool/dataFactory">-->
+              <!--<span class="menu-title">数据工厂</span>-->
+                <!--<i class="glyphicon glyphicon-th-list"></i>-->
+            <!--</a>-->
+        <!--</li>-->
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#data-factory">
+              <span class="menu-title">数据工厂</span>
+                <i class="glyphicon glyphicon-chevron-right"></i>
+            </a>
+            <div class="collapse" id="data-factory">
+                <ul>
+                    <li class="nav-item"> <a class="nav-link" href="/tool/example1">example1</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/tool/example2">example2</a></li>
+                </ul>
+            </div>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/tool/dataFactory">
+                <span class="menu-title">保留1</span>
+                <i class="glyphicon glyphicon-th"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/tool/dataFactory">
+                <span class="menu-title">保留2</span>
+                <i class="glyphicon glyphicon-th-large"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/tool/dataFactory">
+                <span class="menu-title">保留3</span>
+                <i class="glyphicon glyphicon-align-left"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<div class="right">
+    <div class="leaderboard">
+        <h1>Learn. Practice. Develop.</h1>
+    </div>
+    <hr>
+    <footer class="footer">
+        <p>Copyright © Shuyun All Rights Reserved</p>
+    </footer>
+
+
+</div>
+<!--<footer class="footer">-->
+    <!--<p>Copyright © Shuyun All Rights Reserved.</p>-->
+<!--</footer>-->
+{% endblock %}
+
+

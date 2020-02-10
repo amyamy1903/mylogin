@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}新建接口参数配置{% endblock %}
+{% load staticfiles %}
+{% block css %}
+    <link href="{% static 'css/interface/add-project-style.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h4 class="heading fl">接口参数配置</h4>
+    <hr>
+    <div class="container">
+          <form role="form" method="POST">
+              {% csrf_token %}
+              <!--<h2 class="text-center">新建项目</h2>-->
+              <div class="form-group addRedStar" >
+                  {{ test_case_param_template.template_name.label_tag }}
+                  {{ test_case_param_template.template_name }}
+              </div>
+              <div class="form-group" >
+                  {{ test_case_param_template.template_desc.label_tag }}
+                  {{ test_case_param_template.template_desc }}
+              </div>
+              <div class="form-group addRedStar" >
+                  {{ test_case_param_template.string.label_tag }}
+                  {{ test_case_param_template.string }}
+              </div>
+              <div class="form-group addRedStar">
+                  {{ test_case_param_template.int.label_tag }}
+                  {{ test_case_param_template.int }}
+              </div>
+              <div class="form-group addRedStar">
+                  {{ test_case_param_template.number.label_tag }}
+                  {{ test_case_param_template.number }}
+              </div>
+              <div class="form-group addRedStar">
+                  {{ test_case_param_template.date.label_tag }}
+                  {{ test_case_param_template.date }}
+              </div>
+              <div class="form-group addRedStar">
+                  {{ test_case_param_template.bool.label_tag }}
+                  {{ test_case_param_template.bool }}
+              </div>
+              <div class="form-group addRedStar">
+                  {{ test_case_param_template.decimal.label_tag }}
+                  {{ test_case_param_template.decimal }}
+              </div>
+              <button type="submit" class="btn btn-primary pull-left">新建参数配置</button>
+              <span class="btn btn-primary pull-right" id="addInterfaceCancel" onclick="navigate_html()">取消</span>
+          </form>
+    </div>
+
+
+</div>
+
+
+
+    <!--<hr>-->
+    <!--<footer class="footer">-->
+        <!--<p>Copyright © Shuyun All Rights Reserved</p>-->
+    <!--</footer>-->
+<!--<footer class="footer">-->
+    <!--<p>Copyright © Shuyun All Rights Reserved.</p>-->
+<!--</footer>-->
+{% endblock %}
+
+{% block script%}
+<script type="text/javascript">
+    function alertFunction(data){
+	    alert(data);
+    }
+    {% if message %}
+       alertFunction("{{ message }}")
+    {% endif %}
+    function navigate_html() {
+        window.location.href="allTemplate";
+    }
+</script>
+{% endblock%}

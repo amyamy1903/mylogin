@@ -1,0 +1,1070 @@
+{% extends 'base.html' %}
+{% block title %}数据监控{% endblock %}
+{% block css %}
+{% load staticfiles %}
+<link href="{% static 'css/index_style.css' %}" rel="stylesheet">
+<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script type="text/javascript" src="{% static 'js/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.multiselect.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.quicksearch.js' %}"></script>
+
+<link href="{% static 'css/interface/style.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+<link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/jquery.multiselect.css' %}">
+<script src="{% static 'js/sidebar.js' %}"></script>
+
+    <style type="text/css">
+		<!--#menu{-->
+			<!--font-size: 15px;-->
+			<!--font-weight: bold;-->
+		<!--}-->
+		<!--#menu li{-->
+			<!--text-decoration: none;  /*去掉前面的圆点*/-->
+			<!--list-style: none;-->
+			<!--float: left;-->
+			<!--border: 1px solid #FFFFFF;-->
+			<!--//background-color: #30DDEB;-->
+		<!--}-->
+	    .toTop {
+				width: 70px;
+				height: 70px;
+				border-radius: 50%;
+				background: greenyellow;
+				text-align: center;
+				line-height: 70px;
+				/*返回顶部标签固定定位*/
+				position: fixed;
+				right: 35px;
+				bottom: 35px;
+				z-index: 999;
+				font-size: 14px;
+		}
+
+		.toTop:hover {
+				background: green;
+				font-size: 16px;
+				cursor: pointer;
+				color: red;
+		}
+		.toBottom {
+				width: 70px;
+				height: 70px;
+				border-radius: 50%;
+				background: greenyellow;
+				text-align: center;
+				line-height: 70px;
+				/*返回顶部标签固定定位*/
+				position: fixed;
+				right: 35px;
+				bottom: 125px;
+				z-index: 999;
+				font-size: 14px;
+		}
+
+		.toBottom:hover {
+				background: green;
+				font-size: 16px;
+				cursor: pointer;
+				color: red;
+		}
+	</style>
+{% endblock %}
+
+{% block menu %}
+<ul class="nav navbar-nav">
+    <li class="active"><a href="/index/">主页</a></li>
+    <li class="active"><a href="/monitor/">数据监控</a></li>
+    <li class="active"><a href="/interface/">接口测试</a></li>
+    <li class="active"><a href="/performance/">性能测试</a></li>
+    <li class="active"><a href="/tool/">测试工具</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/monitor/">
+              <span class="menu-title">面板</span>
+                <i class="glyphicon glyphicon-home"></i>
+            </a>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/monitor/">
+                <span class="menu-title">保留1</span>
+                <i class="glyphicon glyphicon-th"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/monitor/">
+                <span class="menu-title">保留2</span>
+                <i class="glyphicon glyphicon-th-large"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/monitor/">
+                <span class="menu-title">保留3</span>
+                <i class="glyphicon glyphicon-align-left"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+<div class="center">
+    <div id="set-content">
+        <ul id="menu">
+            <li>
+                <label for="intervalTimePlatCode">周期时间平台: </label>
+                <select id="intervalTimePlatCode"></select>
+            </li>
+            <li>
+
+                <label for="monitor_type_Name">统计指标:</label>
+                <select id="monitor_type_Name" multiple="multiple" size="4"></select>
+            </li>
+            <li>
+                <label for="tenantName">租户名称:</label>
+                <select id="tenantName" multiple="multiple" size="4"></select>
+            </li>
+            <li>
+                <button id='query'>查询</button>
+            </li>
+            <a id="download_report" href="#" title="查询完毕后才会有报告,所以不要一直点">问题报告下载</a>
+        </ul>
+    </div>
+    <!--<div id="container_summary" style="width: 1550px; height: 1500px; margin: 0 auto"></div>-->
+    <!--<div id="container" style="width: 1550px; height: 500px; margin: 0 auto"></div>-->
+    <div id="container_summary" ></div>
+    <div id="container"></div>
+    <div class="toTop">回顶部</div>
+    <div class="toBottom">去底部</div>
+</div>
+<!--<div class="right">-->
+    <!--<div class="leaderboard">-->
+        <!--<h1>Learn. Practice. Develop.</h1>-->
+    <!--</div>-->
+    <!--<hr>-->
+    <!--<footer class="footer">-->
+        <!--<p>Copyright © Shuyun All Rights Reserved</p>-->
+    <!--</footer>-->
+<!--</div>-->
+<!--<footer class="footer">-->
+    <!--<p>Copyright © Shuyun All Rights Reserved.</p>-->
+<!--</footer>-->
+{% endblock %}
+
+{% block script%}
+<script type="text/javascript">
+    $(document).ready(function() {
+		// 初始时，“返回顶部,去底部”标签隐藏
+		$(".toTop").hide();
+		$(".toBottom").hide();
+		$(window).scroll(function() {
+		    document_length = $(document).height()
+			// 若滚动的高度，超出指定的高度后，“返回顶部”的标签出现。
+			if($(document).scrollTop() >= 150) {
+				$(".toTop").show();
+			} else {
+				$(".toTop").hide();
+			}
+			if($(document).scrollTop() > 0) {
+				$(".toBottom").show();
+			} else {
+				$(".toBottom").hide();
+			}
+		})
+
+		// 绑定点击事件，实现返回顶部的效果
+		$(".toTop").click(function() {
+			$(document).scrollTop(0);
+		})
+
+		$(".toBottom").click(function() {
+			$(document).scrollTop(document_length);
+		})
+
+	})
+
+
+    //方法3：将时间周期，平台合为一体，简化筛选
+    var tmp_intervalTimePlatCode = null;
+    var mydefalutvalue = new Array();
+    $(function() {
+        $.get("/monitor/get_time_interval_and_plat_code",
+            function(dataDict){
+                for (var id in dataDict)
+                {
+                    if(mydefalutvalue == false)
+                    {
+                       //标识位，第一次默认联动请求需要只发一次，不然tenant会选择多次
+                        mydefalutvalue.push(dataDict[id])
+                        tmp_intervalTimePlatCode = dataDict[id]
+                        console.log("init tmp_intervalTimePlatCode:", tmp_intervalTimePlatCode)
+                        //因为第一次初始化的时候没有onchange操作，所以在得到默认值的时候就要触发第一次的ajax
+                        var beginDate0 = tmp_intervalTimePlatCode.split('|')[0]
+                        var endDate0 = tmp_intervalTimePlatCode.split('|')[1]
+                        var platName0 = tmp_intervalTimePlatCode.split('|')[2]
+                        console.log("beginDate0", beginDate0)
+                        console.log("endDate0", endDate0)
+                        console.log("platName0", platName0)
+                        time_interval_and_plat =
+                        {
+                            'beginDate': beginDate0,
+                            'endDate': endDate0,
+                            'platName': platName0
+                        };
+                        initTenant();
+                    }
+                    intervalTimePlatCode_Option = "<option value='" + id + "'>" + dataDict[id] + "</option>";
+                    $("#intervalTimePlatCode").append(intervalTimePlatCode_Option);
+                }
+            }
+        );
+
+    });
+
+
+    function initTenant() {
+        $.ajax({
+            type: "GET",
+            url: "/monitor/get_tenant_name",
+            dataType:'json',
+            data:time_interval_and_plat,
+            async:false,
+            success: function(dataDict){
+                // 循环添加下拉列表的option
+                for (var id in dataDict) {
+                    tenantOption = "<option value='" + id + "'>" + dataDict[id] + "</option>";
+                    $("#tenantName").append(tenantOption);
+                }
+                $("#tenantName").multiselect({
+                    noneSelectedText: "---请选择---",
+                    selectedText:'已选择 # 项',
+                    checkAllText: "全选",
+                    uncheckAllText: '全不选',
+                    height: 200,
+                    minWidth: 220,
+                    selectedList:1
+                });
+                $("#tenantName").multiselect("checkAll");
+                console.log("init tenant:", $("#tenantName").val())
+            }
+        })
+    }
+
+
+    function changeTenant(time_platcode) {
+        var beginDate0 = time_platcode.split('|')[0]
+        var endDate0 = time_platcode.split('|')[1]
+        var platName0 = time_platcode.split('|')[2]
+        console.log("beginDate0", beginDate0)
+        console.log("endDate0", endDate0)
+        console.log("platName0", platName0)
+        time_interval_and_plat =
+        {
+            'beginDate': beginDate0,
+            'endDate': endDate0,
+            'platName': platName0
+        };
+
+        $.ajax({
+            type: "GET",
+            url: "/get_tenant_name",
+            dataType:'json',
+            data:time_interval_and_plat,
+            async:false,
+            success: function(dataDict){
+                $("#tenantName").empty();
+                // 循环添加下拉列表的option
+                for (var id in dataDict) {
+                    tenantOption = "<option value='" + id + "'>" + dataDict[id] + "</option>";
+                    $("#tenantName").append(tenantOption);
+                }
+
+                $("#tenantName").multiselect({
+                    noneSelectedText: "---请选择---",
+                    selectedText:'已选择 # 项',
+                    checkAllText: "全选",
+                    uncheckAllText: '全不选',
+                    height: 200,
+                    minWidth: 220,
+                    selectedList:1
+                });
+
+
+                $("#tenantName").multiselect('refresh');
+                $("#tenantName").multiselect("checkAll");
+                $("#tenantName").multiselect('refresh');
+                console.log("change tenant:", $("#tenantName").val());
+            }
+        })
+
+    }
+
+    $("select#intervalTimePlatCode").on("change", function(){
+        tmp_intervalTimePlatCode = $("#intervalTimePlatCode").val();
+        console.log("tmp_intervalTimePlatCode is:", tmp_intervalTimePlatCode);
+        changeTenant(tmp_intervalTimePlatCode)
+    });
+
+
+
+
+    //方法2:指标是固定的，所以决定在前端固定，不从数据库中取了,先把最新订单时间去掉"latest_trade_time":"最新订单时间",
+    <!--indicatordict = {-->
+        <!--"trade_created_interval_count":"created大于等于开始时间，小于结束时间的订单数量",-->
+        <!--"trade_modified_interval_count":"modified大于等于开始时间，小于结束时间的订单数量",-->
+        <!--"trade_created_less_than_count":"created小于开始时间的订单数量",-->
+        <!--"order_created_interval_distinct_count":"created大于等于开始时间，小于结束时间的按主订单去重数量",-->
+        <!--"order_created_interval_count":"created大于等于开始时间，小于结束时间的子订单数量",-->
+        <!--"order_modified_interval_count":"modified大于等于开始时间，小于结束时间的子订单数量",-->
+        <!--"order_created_less_than_count":"created小于开始时间的子订单数量",-->
+        <!--"customer_count":"客户总数",-->
+        <!--"member_created_less_than_count":"会员注册日期小于结束时间",-->
+        <!--"refund_created_less_than_count":"退款created小于结束时间"-->
+    <!--}-->
+    indicatordict = {
+        "trade_created_interval_count":"created大于等于开始时间，小于结束时间的订单数量",
+        "trade_created_less_than_count":"created小于开始时间的订单数量",
+        "order_created_interval_distinct_count":"created大于等于开始时间，小于结束时间的按主订单去重数量",
+        "order_created_interval_count":"created大于等于开始时间，小于结束时间的子订单数量",
+        "order_created_less_than_count":"created小于开始时间的子订单数量",
+        "customer_count":"客户总数",
+        "member_created_less_than_count":"会员注册日期小于结束时间",
+        "refund_created_less_than_count":"退款created小于结束时间"
+    }
+
+
+    indicator_name = []
+    $(function(){
+        for (var id in indicatordict)
+        {
+            monitor_type_Name_Option = "<option value='" + id + "'>" + indicatordict[id] + "</option>";
+            $("#monitor_type_Name").append(monitor_type_Name_Option);
+            indicator_name.push(indicatordict[id])
+        }
+        //console.log("indicator_name", indicator_name)
+        $("#monitor_type_Name").multiselect({
+            enableFiltering: true,
+            noneSelectedText: "---请选择---",
+            selectedText:'已选择 # 项',
+            checkAllText: "全选",
+            uncheckAllText: '全不选',
+            height: 200,
+            minWidth: 220,
+            selectedList:1
+        });
+        //$("#monitor_type_Name").quicksearch("checkAll");
+        $("#monitor_type_Name").multiselect("checkAll");
+    });
+
+
+
+        <!--// 动态获取数据库中租户名字，填充入下拉列表-->
+        <!--$(function() {-->
+            <!--$.get( "/monitor/get_tenant_name",-->
+                <!--&lt;!&ndash;{"limit":"0",},&ndash;&gt;-->
+                <!--function(dataDict) {-->
+                    <!--// 循环添加下拉列表的option-->
+                    <!--for (var id in dataDict) {-->
+                        <!--tenantOption = "<option value='" + id + "'>" + dataDict[id] + "</option>";-->
+                        <!--$("#tenantName").append(tenantOption);-->
+                    <!--}-->
+                    <!--$("#tenantName").multiselect({-->
+                        <!--noneSelectedText: "-&#45;&#45;请选择-&#45;&#45;",-->
+                        <!--selectedText:'已选择 # 项',-->
+                        <!--checkAllText: "全选",-->
+                        <!--uncheckAllText: '全不选',-->
+                        <!--height: 200,-->
+                        <!--minWidth: 220,-->
+                        <!--selectedList:1-->
+                    <!--});-->
+                    <!--$("#tenantName").multiselect("checkAll");-->
+                <!--},-->
+                <!--"json");-->
+        <!--});-->
+
+
+    function fake_click(obj) {
+        var ev = document.createEvent("MouseEvents");
+        ev.initMouseEvent(
+            "click", true, false, window, 0, 0, 0, 0, 0
+            , false, false, false, false, 0, null
+        );
+        obj.dispatchEvent(ev);
+    }
+    download_report = []
+    function export_raw(name, data) {
+        var urlObject = window.URL || window.webkitURL || window;
+        //var export_blob = new Blob([data]);
+        var export_blob = new Blob(data);
+
+        var save_link = document.createElementNS("http://www.w3.org/1999/xhtml", "a")
+        save_link.href = urlObject.createObjectURL(export_blob);
+        //save_link.download = name;
+        save_link.download = name;
+        fake_click(save_link);
+    }
+
+    $('download_report').click(function() {
+	    export_raw(tmp_intervalTimePlatCode, download_report);
+    });
+
+    function unique(arr) {
+        var hash=[];
+        for (var i = 0; i < arr.length; i++) {
+            if(hash.indexOf(arr[i])==-1){
+                hash.push(arr[i]);
+            }
+        }
+        return hash;
+    }
+
+    //绑定query按钮的单击操作
+    $(function() {
+        $("#query").click(function() {
+            var beginDate = tmp_intervalTimePlatCode.split('|')[0]
+            var endDate = tmp_intervalTimePlatCode.split('|')[1]
+            var platName = tmp_intervalTimePlatCode.split('|')[2]
+            var monitor_type_Names = $("#monitor_type_Name").val();
+            var selectedTenantNames = $("#tenantName").val();
+
+            if (selectedTenantNames == null) {
+                alert("请至少选择一个租户！");
+            }
+            if (monitor_type_Names == null) {
+                alert("请至少选择一个指标！");
+            }
+            console.log("selectedTenantNames", selectedTenantNames)
+            console.log("beginDate is:",beginDate)
+            console.log("endDate is:",endDate)
+            console.log("monitor_type_Names is:",monitor_type_Names)
+            console.log("platName is:",platName)
+            console.log("tmp_intervalTimePlatCode is:", tmp_intervalTimePlatCode)
+            //每次查询时都需要初始化汇总数据
+            download_report = []
+            hive_summary = []
+            es_summary = []
+            polardb_summary = []
+
+            //将不同统计指标连接成字符串
+            queryReport(beginDate, endDate, monitor_type_Names.join("@"),platName,selectedTenantNames.join("@"));
+        });
+    })
+
+    var lineChart;
+
+    //获取绘图数据
+    function queryReport(beginDate, endDate, monitor_type_Name,platName,selectedTenantName)
+    {
+        current_time_plat = beginDate + '|' + endDate + '|' + platName
+        //获取数据的过程
+        var chartData = null;
+        var tenant = [];
+        var esTreeData = [];
+        var hiveTreeData = [];
+        var baseTreeData = [];
+        var polardbTreeData = [];
+        var monitorTypeNames = [];
+        //monitor_type_Name:英文字段，monitorTypeNames:中文名称
+        var monitor_type_Name_split = monitor_type_Name.split("@")
+        console.log("monitor_type_Name_split", monitor_type_Name_split)
+         //指标名称,根据动态选择动态获取，并且前端返回为中文
+        $.each(indicatordict, function(key, val)
+        {
+            $.each(monitor_type_Name_split,function(key1,value1)
+            {
+                if(key == value1)
+                {
+                    monitorTypeNames.push(val)
+                }
+            })
+        })
+
+        // 构造url参数
+        parameters_base =
+        {
+            'beginDate': beginDate,
+            'endDate': endDate,
+            'monitor_type_Name': monitor_type_Name,
+            'platName': platName,
+            'tenantName': selectedTenantName,
+            'dataType': 'base'
+        };
+        parameters_es =
+        {
+            'beginDate': beginDate,
+            'endDate': endDate,
+            'monitor_type_Name': monitor_type_Name,
+            'platName': platName,
+            'tenantName': selectedTenantName,
+            'dataType': 'es'
+        };
+        parameters_hive =
+        {
+            'beginDate': beginDate,
+            'endDate': endDate,
+            'monitor_type_Name': monitor_type_Name,
+            'platName': platName,
+            'tenantName': selectedTenantName,
+            'dataType': 'hive'
+        };
+        parameters_polardb =
+        {
+            'beginDate': beginDate,
+            'endDate': endDate,
+            'monitor_type_Name': monitor_type_Name,
+            'platName': platName,
+            'tenantName': selectedTenantName,
+            'dataType': 'polardb'
+        };
+        // 请求绘图数据
+        $.ajaxSettings.async = false;
+        $.get("/monitor/get_date_tenant_monitor_statics",
+            parameters_base,
+            function(rankDict)
+            {
+                baseChartData = rankDict
+            },
+            "json"
+        );
+        $.get("/monitor/get_date_tenant_monitor_statics",
+            parameters_es,
+            function(rankDict)
+            {
+                esChartData = rankDict
+            },
+            "json"
+        );
+        $.get("/monitor/get_date_tenant_monitor_statics",
+            parameters_hive,
+            function(rankDict)
+            {
+                hiveChartData = rankDict
+            },
+            "json"
+        );
+        $.get("/monitor/get_date_tenant_monitor_statics",
+            parameters_polardb,
+            function(rankDict)
+            {
+                polardbChartData = rankDict
+            },
+            "json"
+        );
+        $.ajaxSettings.async = true;
+
+
+        //将从后端得到的数据重新组装成需求的数据格式,如果不从tree中获得那么可能select的顺序和实际后端返回tree中数据对不上
+        $.each(selectedTenantName.split('@'), function(key,val)
+        {
+            tenant.push(val)
+        })
+        $.each(esChartData, function(key, val)
+        {
+            //这块不能这么写，如果没有es数据的话那么就得不到tenant数据，tenant需要根据上面的方法，根据客户选择的tenant
+            //tenant.push(key)
+            esTreeData.push(val)
+        })
+        $.each(hiveChartData, function(key, val)
+        {
+            hiveTreeData.push(val)
+        })
+        $.each(baseChartData, function(key, val)
+        {
+            baseTreeData.push(val)
+        })
+        $.each(polardbChartData, function(key, val)
+        {
+            polardbTreeData.push(val)
+        })
+        console.log("monitorTypeNames", monitorTypeNames)
+        console.log("beginDate", beginDate)
+        console.log("endDate", endDate)
+        console.log("platName", platName)
+        console.log("tenant", tenant)
+        console.log("hiveTreeData", hiveTreeData)
+        console.log("esTreeData", esTreeData)
+        console.log("baseTreeData", baseTreeData)
+        console.log("polardbTreeData", polardbTreeData)
+
+
+        //动态表格数据部分
+        //每一次查询的时候需要清空之前的container,不然会出现多份数据
+        $("#container").empty();
+        $("container_summary").empty();
+        var divTest = document.getElementById("container");
+        var divSummary = document.getElementById("container_summary");
+        var tableSummary = document.createElement('table');
+        tableSummary.id = "tableSummary";
+        tableSummary.border=1
+        tableSummary.cellspacing=0
+        divSummary.appendChild(tableSummary);
+
+        //每一个存储问题租户
+        hive_summary = []
+        es_summary = []
+        polardb_summary = []
+        for(var i =0; i < tenant.length; i++)
+        {
+            //在父div id=container下面创建和子div
+            var oDiv = document.createElement('div');
+            oDiv.id = "tenant" + i;
+            oDiv.style = "width:1300px;height:400px;";
+            divTest.appendChild(oDiv);
+
+            //在父div id=container下面创建和子div同级的table,这样格式就和highchart中html显示格式一致
+            var table = document.createElement('table');
+            table.id = "table" + i;
+            table.border=1
+            table.cellspacing=0
+            divTest.appendChild(table);
+
+            //判断是否有数据，没有数据的全部赋值为nodata, 按照拼接html的方式得到表格格式
+            if (typeof(baseTreeData[i]) == "undefined"){
+                baseTreeData[i]= ['nodata', 'nodata', 'nodata', 'nodata' ,'nodata', 'nodata', 'nodata', 'nodata', 'nodata', 'nodata']
+            }
+            if (typeof(hiveTreeData[i]) == "undefined"){
+                hiveTreeData[i]= ['nodata', 'nodata', 'nodata', 'nodata' ,'nodata', 'nodata', 'nodata', 'nodata', 'nodata', 'nodata']
+            }
+            if (typeof(esTreeData[i]) == "undefined"){
+                esTreeData[i]= ['nodata', 'nodata', 'nodata', 'nodata' ,'nodata', 'nodata', 'nodata', 'nodata', 'nodata', 'nodata']
+            }
+            if (typeof(polardbTreeData[i]) == "undefined"){
+                polardbTreeData[i]= ['nodata', 'nodata', 'nodata', 'nodata' ,'nodata', 'nodata', 'nodata', 'nodata', 'nodata', 'nodata']
+            }
+            <!--//tr行，th标题，td数据-->
+            console.log("监控指标len(monitorTypeNames)", monitorTypeNames.length)
+            <!--var html = ""-->
+            <!--html += "<thead>";-->
+            <!--html +=    "<tr><th></th><th width='100'>"+ monitorTypeNames[0] + "</th><th width='100'>"+ monitorTypeNames[1] + "</th><th width='100'>"+ monitorTypeNames[2] + "</th><th width='100'>"+ monitorTypeNames[3] +"</th><th width='100'>"+ monitorTypeNames[4] +"</th><th width='100'>"+ monitorTypeNames[5] +"</th><th width='100'>"+ monitorTypeNames[6] +"</th><th width='100'>"+ monitorTypeNames[7] +"</th><th width='100'>"+ monitorTypeNames[8] +"</th><th width='100'>"+ monitorTypeNames[9] +"</th></tr>"-->
+            <!--html += "</thead>";-->
+            <!--html += "</tbody>";-->
+            <!--html +=     "<tr><th>"+ "基准数据" + "</th><td>" + baseTreeData[i][0] +"</td><td>"+ baseTreeData[i][1] + "</td><td>"+ baseTreeData[i][2] + "</td><td>"+ baseTreeData[i][3] + "</td><td>"+ baseTreeData[i][4] + "</td><td>"+ baseTreeData[i][5] + "</td><td>"+ baseTreeData[i][6] + "</td><td>"+ baseTreeData[i][7] + "</td><td>"+ baseTreeData[i][8] + "</td><td>"+ baseTreeData[i][9] + "</td></tr>"-->
+            <!--html +=     "<tr><th>"+ "ES数据" + "</th><td>" + esTreeData[i][0] +"</td><td>"+ esTreeData[i][1] + "</td><td>"+ esTreeData[i][2] + "</td><td>"+ esTreeData[i][3] + "</td><td>"+ esTreeData[i][4] + "</td><td>"+ esTreeData[i][5] + "</td><td>"+ esTreeData[i][6] + "</td><td>"+ esTreeData[i][7] + "</td><td>"+ esTreeData[i][8] + "</td><td>"+ esTreeData[i][9] + "</td></tr>"-->
+            <!--html +=     "<tr><th>"+ "ES/基准" + "</th><td>" + (esTreeData[i][0]/baseTreeData[i][0]).toFixed(10) +"</td><td>"+  "====" + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td></tr>"-->
+            <!--//html +=     "<tr><th>"+ "华丽的分割线" + "</th><td>" + "====" +"</td><td>"+  "====" + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td><td>"+  "===="  + "</td></tr>"-->
+            <!--html +=     "<tr><th>"+ "基准数据" + "</th><td>" + baseTreeData[i][0] +"</td><td>"+ baseTreeData[i][1] + "</td><td>"+ baseTreeData[i][2] + "</td><td>"+ baseTreeData[i][3] + "</td><td>"+ baseTreeData[i][4] + "</td><td>"+ baseTreeData[i][5] + "</td><td>"+ baseTreeData[i][6] + "</td><td>"+ baseTreeData[i][7] + "</td><td>"+ baseTreeData[i][8] + "</td><td>"+ baseTreeData[i][9] + "</td></tr>"-->
+            <!--html +=     "<tr><th>"+ "hive数据" + "</th><td>" + hiveTreeData[i][0] +"</td><td>"+ hiveTreeData[i][1] + "</td><td>"+ hiveTreeData[i][2] + "</td><td>"+ hiveTreeData[i][3] + "</td><td>"+ hiveTreeData[i][4] + "</td><td>"+ hiveTreeData[i][5] + "</td><td>"+ hiveTreeData[i][6] + "</td><td>"+ hiveTreeData[i][7] + "</td><td>"+ hiveTreeData[i][8] + "</td><td>"+ hiveTreeData[i][9] + "</td></tr>"-->
+            <!--html += "</tbody>";-->
+            var html = ""
+            html += "<thead><tr><th></th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<th width='100'>"+ monitorTypeNames[l] + "</th>"
+            }
+            html += "</tr></thead>";
+            html += "</tbody><tr><th>"+ "基准数据" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + baseTreeData[i][l] +"</td>"
+            }
+            html += "</tr><tr><th>"+ "ES数据" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + esTreeData[i][l] +"</td>"
+            }
+            html += "</tr><tr><th>"+ "ES/基准" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + (esTreeData[i][l]/baseTreeData[i][l]).toFixed(10) +"</td>"
+            }
+            html += "</tr><tr><th>"+ "基准数据" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + baseTreeData[i][l] +"</td>"
+            }
+            html += "</tr><tr><th>"+ "HIVE数据" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + hiveTreeData[i][l] +"</td>"
+            }
+            html += "</tr><tr><th>"+ "HIVE/基准" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + (hiveTreeData[i][l]/baseTreeData[i][l]).toFixed(10) +"</td>"
+            }
+            html += "</tr><tr><th>"+ "基准数据" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + baseTreeData[i][l] +"</td>"
+            }
+            html += "</tr><tr><th>"+ "POLARDB数据" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + polardbTreeData[i][l] +"</td>"
+            }
+            html += "</tr><tr><th>"+ "POLARDB/基准" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + (polardbTreeData[i][l]/baseTreeData[i][l]).toFixed(10) +"</td>"
+            }
+            html += "</tr><tr><th>"+ "ES/POLARDB" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + (esTreeData[i][l]/polardbTreeData[i][l]).toFixed(10) +"</td>"
+            }
+            html += "</tr><tr><th>"+ "HIVE/POLARDB" + "</th>";
+            for(var l=0;l<monitorTypeNames.length;l++)
+            {
+                html +="<td>" + (hiveTreeData[i][l]/polardbTreeData[i][l]).toFixed(10) +"</td>"
+            }
+            html += "</tr></tbody>";
+            $("#table"+i).html(html);
+
+            //获取table内数据的过程。（这个其实不不用再重新获取了，直接拿treedata,但是选择器得变，先不换了)
+            baselist = []
+            eslist = []
+            hivelist = []
+            polardblist = []
+            $("#table" + i + " tbody tr").each(function(index,value){
+                var a = $(this).children();//获取每一行
+                //i=0的时候是header，为了和下面选择器一致，用一个循环，i从0开始，取上header名称，后面数据比较的时候从1开始
+                for(var i=0; i < a.length; i++)
+                {
+                    if(index == 0)
+                    {
+                        baselist.push(a[i].innerText)
+                    }
+                    if(index == 1)
+                    {
+                        eslist.push(a[i].innerText)
+                    }
+                    if(index == 4)
+                    {
+                        hivelist.push(a[i].innerText)
+                    }
+                    if(index == 7)
+                    {
+                        polardblist.push(a[i].innerText)
+                    }
+                }
+            });
+            console.log(tenant[i],"基准数据", baselist)
+            console.log(tenant[i],"ES数据", eslist)
+            console.log(tenant[i],"HIVE数据", hivelist)
+            console.log(tenant[i],"polardb数据", hivelist)
+
+            base_selection1 = []
+            base_selection2 = []
+            base_selection3 = []
+            es_selection = []
+            hive_selection = []
+            polardb_selection = []
+            es_base_selection = []
+            hive_base_selection = []
+            polardb_base_selection = []
+            es_polardb_selection = []
+            hive_polardb_selection = []
+            //获取每一个维度数据的选择器，selection中也包含了header
+            $("#table" + i + " tbody tr").each(function(index, value){
+                if(index == 0)
+                {
+                    base_selection1=$(this).children()
+                }
+                if(index == 1)
+                {
+                    es_selection=$(this).children()
+                }
+                if(index == 2)
+                {
+                    es_base_selection=$(this).children()
+                }
+                if(index == 3)
+                {
+                    base_selection2=$(this).children()
+                }
+                if(index == 4)
+                {
+                   hive_selection=$(this).children()
+                }
+                if(index == 5)
+                {
+                   hive_base_selection=$(this).children()
+                }
+                if(index == 6)
+                {
+                    base_selection3=$(this).children()
+                }
+                if(index == 7)
+                {
+                   polardb_selection=$(this).children()
+                }
+                if(index == 8)
+                {
+                   polardb_base_selection=$(this).children()
+                }
+                if(index == 9)
+                {
+                   es_polardb_selection=$(this).children()
+                }
+                if(index == 10)
+                {
+                   hive_polardb_selection=$(this).children()
+                }
+            });
+
+            //debugger;
+            //console.warn("amy_intervalTimePlatCode", tmp_intervalTimePlatCode)
+            //console.warn("amy_monitorTypeNames", monitorTypeNames)
+
+            //各个selection长度都一样，随便选一个;
+
+            for(var j=1;j<base_selection1.length;j++)
+            {
+                //console.log("第j列开始:", i)
+                //console.warn("hhahah", monitorTypeNames[j-1])
+                //es效果
+                if(baselist[j] == eslist[j])
+                {
+                    $(base_selection1[j]).css("color","green");
+                    $(es_selection[j]).css("color","green");
+
+                }
+                else
+                {
+                    $(base_selection1[j]).css("color","red");
+                    $(es_selection[j]).css("color","red");
+                }
+
+                es_base_percent = eslist[j]/baselist[j]
+                hive_base_percent = hivelist[j]/baselist[j]
+                polardb_base_percent = polardblist[j]/baselist[j]
+                es_polardb_percent = eslist[j]/polardblist[j]
+                hive_polardb_percent = hivelist[j]/polardblist[j]
+
+                <!--if(es_base_percent > 0.999 && es_base_percent < 1.001 && hive_base_percent > 0.999 && hive_base_percent <1.1 && polardb_base_percent > 0.999 && polardb_base_percent < 1.1)-->
+                <!--{-->
+                    <!--console.log("all equal", )-->
+                <!--}-->
+
+                if(es_base_percent < 0.999)
+                {
+                    if(monitorTypeNames[j-1] == 'created大于等于开始时间，小于结束时间的按主订单去重数量' || monitorTypeNames[j-1] == '退款created小于结束时间')
+                    {
+                        console.log("monitorTypeNames[j-1]", monitorTypeNames[j-1])
+                    }
+                    else
+                    {
+                        console.error(current_time_plat, tenant[i], "ES问题数据小于0.999", monitorTypeNames[j-1], "实际:", eslist[j], "基准:", baselist[j], "百分比:", es_base_percent);
+                        $(es_base_selection[j]).css("background-color","yellow");
+                        download_report.push(current_time_plat, tenant[i], "ES问题数据小于0.999", monitorTypeNames[j-1], "实际:", eslist[j], "基准:", baselist[j], "百分比:", es_base_percent, '\n')
+                        es_summary.push(tenant[i]);
+                    }
+                }
+
+                if(es_base_percent > 1.001)
+                {
+                    if(monitorTypeNames[j-1] == 'created大于等于开始时间，小于结束时间的按主订单去重数量' || monitorTypeNames[j-1] == '退款created小于结束时间')
+                    {
+                        console.log("monitorTypeNames[j-1]", monitorTypeNames[j-1])
+                    }
+                    else
+                    {
+                        $(es_base_selection[j]).css("background-color","blue");
+                        console.error(current_time_plat, tenant[i], "ES问题数据大于1.001", monitorTypeNames[j-1], "实际:", eslist[j], "基准:", baselist[j], "百分比:", es_base_percent);
+                        download_report.push(current_time_plat, tenant[i], "ES问题数据大于1.001", monitorTypeNames[j-1], "实际:", eslist[j], "基准:", baselist[j], "百分比:", es_base_percent, '\n')
+                        es_summary.push(tenant[i])
+                    }
+                }
+
+
+                //hive效果
+                if(baselist[j] == hivelist[j])
+                {
+                    $(base_selection2[j]).css("color","green");
+                    $(hive_selection[j]).css("color","green");
+                    //背景色：$(this).css("background-color", "red");
+                }
+                else
+                {
+                    $(base_selection2[j]).css("color","red");
+                    $(hive_selection[j]).css("color","red");
+                }
+
+                if(hive_base_percent < 0.999)
+                {
+                    $(hive_base_selection[j]).css("background-color","yellow");
+                    console.error(current_time_plat, tenant[i], "HIVE问题数据小于0.999", monitorTypeNames[j-1], "实际:", hivelist[j], "基准:", baselist[j], "百分比:", hive_base_percent);
+                    download_report.push(current_time_plat, tenant[i], "HIVE问题数据小于0.999", monitorTypeNames[j-1], "实际:", hivelist[j], "基准:", baselist[j], "百分比:", hive_base_percent, '\n');
+                    hive_summary.push(tenant[i])
+                }
+                if(hive_base_percent > 1.001)
+                {
+                    $(hive_base_selection[j]).css("background-color","blue");
+                    console.error(current_time_plat, tenant[i], "HIVE问题数据大于1.001", monitorTypeNames[j-1], "实际:", hivelist[j], "基准:", baselist[j], "百分比:", hive_base_percent);
+                    download_report.push(current_time_plat, tenant[i], "HIVE问题数据大于1.001", monitorTypeNames[j-1], "实际:", hivelist[j], "基准:", baselist[j], "百分比:", hive_base_percent, '\n');
+                    hive_summary.push(tenant[i])
+                }
+
+                //polardb效果
+                if(baselist[j] == polardblist[j])
+                {
+                    $(base_selection3[j]).css("color","green");
+                    $(polardb_selection[j]).css("color","green");
+                }
+                else
+                {
+                    $(base_selection3[j]).css("color","red");
+                    $(polardb_selection[j]).css("color","red");
+                }
+
+                if(polardb_base_percent < 0.999)
+                {
+                    $(polardb_base_selection[j]).css("background-color","yellow");
+                    console.error(current_time_plat, tenant[i], "POLARDB问题数据小于0.999", monitorTypeNames[j-1], "实际:", polardblist[j], "基准:", baselist[j], "百分比:", polardb_base_percent);
+                    download_report.push(current_time_plat, tenant[i], "POLARDB问题数据小于0.999", monitorTypeNames[j-1], "实际:", polardblist[j], "基准:", baselist[j], "百分比:", polardb_base_percent, '\n');
+                    polardb_summary.push(tenant[i])
+                }
+                if(polardb_base_percent > 1.001)
+                {
+                    $(polardb_base_selection[j]).css("background-color","blue");
+                    console.error(current_time_plat, tenant[i], "POLARDB问题数据大于1.001", monitorTypeNames[j-1], "实际:", polardblist[j], "基准:", baselist[j], "百分比:", polardb_base_percent);
+                    download_report.push(current_time_plat, tenant[i], "POLARDB问题数据大于1.001", monitorTypeNames[j-1], "实际:", polardblist[j], "基准:", baselist[j], "百分比:", polardb_base_percent, '\n');
+                    polardb_summary.push(tenant[i])
+                }
+
+                //es-polardb效果
+                if(es_polardb_percent < 0.999)
+                {
+                    $(es_polardb_selection[j]).css("background-color","yellow");
+                    console.error(current_time_plat, tenant[i], "ES/POLARDB小于0.999", monitorTypeNames[j-1], "ES:", eslist[j], "POLARDB:", polardblist[j], "百分比:", es_polardb_percent);
+                    download_report.push(current_time_plat, tenant[i], "ES/POLARDB小于0.999", monitorTypeNames[j-1], "ES:", eslist[j], "POLARDB:", polardblist[j], "百分比:", es_polardb_percent, '\n');
+                }
+                if(es_polardb_percent > 1.001)
+                {
+                    $(es_polardb_selection[j]).css("background-color","blue");
+                    console.error(current_time_plat, tenant[i], "ES/POLARDB大于1.001", monitorTypeNames[j-1], "ES:", eslist[j], "POLARDB:", polardblist[j], "百分比:", es_polardb_percent);
+                    download_report.push(current_time_plat, tenant[i], "ES/POLARDB大于1.001", monitorTypeNames[j-1], "ES:", eslist[j], "POLARDB:", polardblist[j], "百分比:", es_polardb_percent, '\n');
+                }
+
+                //hive-polardb效果
+                if(hive_polardb_percent < 0.999)
+                {
+                    $(hive_polardb_selection[j]).css("background-color","yellow");
+                    console.error(current_time_plat, tenant[i], "HIVE/POLARDB小于0.999", monitorTypeNames[j-1], "HIVE:", hivelist[j], "POLARDB:", polardblist[j], "百分比:", hive_polardb_percent);
+                    download_report.push(current_time_plat, tenant[i], "HIVE/POLARDB小于0.999", monitorTypeNames[j-1], "HIVE:", hivelist[j], "POLARDB:", polardblist[j], "百分比:", hive_polardb_percent, '\n');
+                }
+                if(hive_polardb_percent > 1.001)
+                {
+                    $(hive_polardb_selection[j]).css("background-color","blue");
+                    console.error(current_time_plat, tenant[i], "HIVE/POLARDB大于1.001", monitorTypeNames[j-1], "HIVE:", hivelist[j], "POLARDB:", polardblist[j], "百分比:", hive_polardb_percent);
+                    download_report.push(current_time_plat, tenant[i], "HIVE/POLARDB大于1.001", monitorTypeNames[j-1], "HIVE:", hivelist[j], "POLARDB:", polardblist[j], "百分比:", hive_polardb_percent, '\n');
+                }
+
+            }
+            // 初始化折线图参数
+            var chart = {
+                renderTo: 'table'+i,//此处是table
+                type: 'column'
+            };
+            var title = {
+                text: tenant[i]
+            };
+            var subtitle = {
+                text: '各项监控指标数据:表格中数据和基准相同数据变为绿色,不相同为红色;数据与基准百分比小于0.999背景色显示为黄色,大于1.001显示为蓝色;ES无订单去重和退款数据,最新订单时间在此表不展示'
+            };
+            var xAxis = {
+                categories: monitorTypeNames,
+                crosshair: true
+            };
+            var yAxis = {
+                min: 0,
+                title: {
+                text: '数据个数(个)'
+                }
+            };
+            var tooltip = {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:.0f} 个</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            };
+            var plotOptions = {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                },
+                series: {
+                    minPointLength : 2
+                }
+             };
+            var credits = {
+                enabled: false
+            };
+
+            var series= [
+            {
+                name: '基准指标数据',
+                data: baseTreeData[i]
+            },
+            {
+                name: 'ES指标数据',
+                data: esTreeData[i]
+            },
+            {
+                name: 'HIVE指标数据',
+                data: hiveTreeData[i]
+            },
+            {
+                name: 'POLARDB指标数据',
+                data: polardbTreeData[i]
+            }];
+
+            var json = {};
+            json.chart = chart;
+            json.title = title;
+            json.subtitle = subtitle;
+            json.tooltip = tooltip;
+            json.xAxis = xAxis;
+            json.yAxis = yAxis;
+            json.series = series;
+            json.plotOptions = plotOptions;
+            json.credits = credits;
+            //此处是container
+            $("#tenant"+i).highcharts(json);
+        }
+        console.log("hive_summary", hive_summary)
+        console.log("es_summary", es_summary)
+        console.log("polardb_summary", polardb_summary)
+
+        unique_hive_summary = unique(hive_summary)
+        unique_es_summary = unique(es_summary)
+        unique_polardb_summary = unique(polardb_summary)
+
+        console.log("周期时间平台:", tmp_intervalTimePlatCode, "hive问题租户", unique_hive_summary, unique_hive_summary.length)
+        console.log("周期时间平台:", tmp_intervalTimePlatCode, "es问题租户", unique_es_summary, unique_es_summary.length)
+        console.log("周期时间平台:", tmp_intervalTimePlatCode, "polardb问题租户", unique_polardb_summary, unique_polardb_summary.length)
+        var tmp_original = []
+        var tmp0 = $.merge(tmp_original, unique_hive_summary);
+        var tmp1 = $.merge(tmp0, unique_es_summary)
+        console.log("周期时间平台:", tmp_intervalTimePlatCode, "tmp1", tmp1, tmp1.length)
+        var tmp2 =$.merge(tmp1, unique_polardb_summary)
+        console.log("周期时间平台:", tmp_intervalTimePlatCode, "tmp2", tmp2, tmp2.length)
+        unique_tmp2 = unique(tmp2)
+        console.log("周期时间平台:", tmp_intervalTimePlatCode, "unique_tmp2", unique_tmp2, unique_tmp2.length)
+        <!--normal_tennat = ['swisselly','babiboo','mlsj','gnpearl2015','saucony','testagent','kipling','momoi','merrydollytjt','zrxl','raj','dada520','seno2018','mudi','datawinner6','grassfed','mmalove','aveeno','ehe','teamson','cdh','taipu','heinz','czkp','oclean','befon','baolelijia','siyun','zrt','semir','aab','milai','aupres','wangbuliao','honeymate','guizu','yunwei','gentlemonster','ubee666','coyeee','apiyoo','insun2017','aldistore','zhongjie1946','joyoung','paparecipeq','tnzz138163','abs','moondoor','covengarden2019','qilixiang','oiwas','wellber','cartelo','roamingman','yakelin','leli','datawinner','fellala','anu360','oshadhi','ouba','rec','palmers','shengyuan','zhanfang','dplay2','hape','adf','clinique','nestle','asics','decathlon','99loveme','pba','glamglow','xiaolongkan','vanessahogan','meiking','jahwaec','0_taobao_63084105','yili','sihoo','jstnyqjd','guyu','0_taobao_57301876_0','baiyue','erdos','rojay','guangzhoujiujia','comvita2017','minij','oysho','yti888','zuimingtang','miaoxi','aodingge','yxly','msmin','ynbyjk','mtcrm','jiashibo2019','grn','qiangsheng','conba','kerener8888','eyearcontemp','yuewei','snjk','a1xiaomianao','simetol','miidii','ribo','menhardum','naitangpai','yatingyawen','100f1','qiaoshi','qianxun','duoqiaomei','daxidi','tries','actionfox','hanshu','meiouhui','goldlion','mccormick','mendale','labseries','chantecaille','hongsexiaoxiang','aiyi','lcshop','natilaka','youyiqiaohui','shiyang2018','putao','dinghutiyu','pinyou8','ochirly','jxjfood','jydghg','threecolour','briston','etam','charming','olityna','gerber','fansiman','amiao618','qianlixiu','0_taobao_35127038','toswim1','zhuoyi','jukeai','junping','hautton','hotsuit','engnice','chouchou2','zhangyujia','xiangyuan','proyamlg','buxiansheng','mmuses','lngfqjd','0_taobao_65020878','yongpu','youngtown','zdorzicrm888','olrain','hemeihuyu','yabt','dyson','asobio','golilionnx','dpzxsycrm','dehui','xxn','ycfs','tpn','masoomake','neiwai','westlink','hkpang','baleno','imis','abercrombiefitch','akl','ytkl','sanxian','loftland','topo','neoflam2018','jettrain','puma2019','beautyblend','yalaso','kuailemaliqijiandian','byys','lanace','quanlinbense','haohushi','classykiss','qiechihe','zengliu','cpt2012','kings','yubao','wetherm','24hours','myven168','bodu','trt','e3m','hhds','onecup','neogence','hhgz','mustela','testtenant','omnialuo','luolaihaoniua','simplepieces','jimuduo','0_taobao_62417221','yckj','yrhz','haoduoyifs','0_taobao_62767986','carljia','sjjd','jindu','bosideng','kamakaile','dula','skshu','ldhg2018','honma','lining','moen','mille','baojiajie','huayin','0_taobao_57300252','goldfarm','jingyuantushu','eleva','hopeshow','lee','lalabobo','ynby','mfwc','longruntea','qiakr','refa','cheers','dunk','xhang','a02','fushan','molifang','ynbl','zhulinws','0_taobao_73501561','ugreen','shiyuejiejingqijiandian','xixihere','luokeke','mohe','demana','bolang','lwest','yiduo','citicbooks','laoa','moreline','wonderlab','vicutu2016','pullandbear','osim','jp20140723','ttmilano','toreadqj','damenkou','ecovacstek','guerlain','fennessy','arc','florihana','dolcegusto','camenae','triumph','iedian','warriorhuili','antafx','haoxiangni','sannuo','lilcritters2017','dodo','jdv','moveup','dazzle','oralb','hsufuchi','pelliot','schick','organictalent','ck7pe','qianjun1986','moli','misige','mlt0818','moamis','vanztina','nr2013','yaojing','gujie','littlefreddie','huarun999','tcbj','mixqueen','merrydolly','wgmf2016','berris','lpst','stillwalk','miaobali','gaibailin','jiaying','mingrenbaobao','edanone','cocovel','michongaichimi','bromen','darlie','meking','lln','rainbo','jiemolv','daimuclub','rafra','newa','liebo','wendongmuying','mintcheese','nars','maifendianshang','yintai','hdjm','bburago','lurenbuluo','jqnwj','bycreations','keres','bampo','ilovechoc','fjzz','philosophy','hfl','ulike','essilorebn2018','fsle','ainakids','roche','zstime','wubian','suma','yilimihui','columbia2tm','cherry','popbro','fcb','fbmy','hanju','aza','ruiao','ugizfsqjd','carters','pencil2017','yerad','fxhuwai','hsia','loz','autumndeer123','xmmz','kappa','uchino','yin','clio','sheji','yishidai','qinyuanwater','sidande','mumutu','aesop','anta','mary007','qianzhihe','wineboss','miele_cn','tutuwo','xihu','niwang','oholv','shiseido','hodo2018','laojinmofang','weimeizi','tfn2015','kailas666','zhaojun','xuezhongfei','quty','sjyj','pzh','tisu','knowhow','auby','vs1103','ykymyd','gdyuewei','alps2015','wangmeng','bulangboshi','hhtu','rayban','keer','zbr0571','wine707','k11beauty','sugar','zhuoqiu','bokeqijiandian','darphin','hanfu','ggym','lst','chunxi','mitangzhicheng','caudalie','nutricia','sjkycrm','suose','73hours','yml','zhongcheng','qiaodan','nxf','tmart','salesdemo','openlady','suitsky','ddf','zhuxiang','yongtian','0_taobao_449521671','a1','xionghaizi','zdyw','hlw','sbc','w1000','mtkyx','xiyang','0_taobao_64816153','luotuofsqjd','wancaoyi','hefeibonida','huiliu','mimai','zszs','danta','qanme','ablejeans','tonlion','ugg','yourunjia','shyf','aoben','xiaobaixiong','jiafeimao255','hangjia','dadoujia','xiaogoudianqi','colincoffee','ad','yazhi','xmqlyf','bedook123','ak','qianxiancao','al','nautica2018','sbld','yinyi','rbdyf','bbz','kaimeiyuan','chenshuo','dgg','decostertamll','hoo','xinqu','hotwind','solone','16488jp','kailubao','cb','dsnzmd','qas','diruiyang','flm','jlzb01','jty','mbrother','sanyi','senma','tuntun','cy','maxwin','kelloggs','lgshjk','luxlead','banmuhuatian','lachzp','0_taobao_60079153','dh','millefiori','youyasuixing','oece','playboy','bsyfs','xiaoye','ysp','kaila','subenwenyi','sofina','meizanchen','qianmai','0_taobao_35261868_0','eitie','jihoo','beie','rouguanjia','oulin','0_taobao_61043175_0','sujimianrl','koradior','daxiaomei','hongxuefei','guoan','fx','venus','jow2017','breo','ssxiaoyu','thepang','simwood','dafan','efriso','sole','kboxingcrm','otao','terun','wxx1121','diplomat','0_taobao_66427284','sedate','dachixiong','zgjy','kaki','shanghaisuyuan','jomalone','jlbqjd','jiayintang','laoguanjia147','enenxiong','marke','0_taobao_106087734_0','suxing001','yuzuo','lancygroup','aptamil','0_taobao_71154261','altfineism','gaiafarm','maxrieny','longying','zhangzidao','yushantang','fenix','meione','doradosun','hono','jd','dunnu','xinguang','yingzifang','newbalance','lesaunda','jl','nanastore','hnhhn','yyd','geendi','nuotai','mac','jinduole','kargocard','ousilu','hxg','fila','librederm','tejieenqijiandian','365pp','cyts','zhoumohao','cocodeal','sllsky','psalter','sswy','naiweike','pirateship','hsxx','neutrogena','sumcl','bershka','huayuan','gyjm','use','vans','office','mulinsen','yhsm','onemix','zhengheji','gongniu','0_taobao_64647851_0','rkylin','mrmian','dimplehsu','petapan','pansy','mj','jolly','8848','haiouna','fanlisi','ms','0_taobao_70846550','yummy2019','kavon','jossyjo','yunmengyuan','huaniang','seamild','mbb1221','lebond','marni','genie','beibeijin','sentiment','cogiqijiandian','7gege','obbligato','cocobella','shbon','zuczug','lqxshop','0_taobao_70507284','esey','361du','kaqi','manzong','dayshowchina','0_taobao_101975510','tommyhilfiger','jooc','friso','kabrita','0_taobao_108864481','bestseller','qkxlj','cocacola','yingjili8','wangbaobao','qiaokemei','hengdabingquan','citicpub','seasonwind','cailinji','menghang','girdear','bamu','hansgrohe','mileyu','egohaiwaiqijiandian','dmzwj','kjdg','edkj','orbis','fudonghai','casio','dmstea','0_taobao_106068047','dgtc','umbro','0_taobao_108221837','maxmartin2015','bossylady','sanfu','benefit','cleanic','rf','fanbeauty','qccr','fairywang','renyangyitouniu','niveamen','frdrellet','hellokitty','chaoyan','pureborn','rw','dusto','dzrcd','ysyj2012','kcyy','beingmate87654321','dannitoys','ysyj2016','yiner','jollywiz','pettalks','sf','stbc','konghua','qtxtea','angelyeast','origins','sm','lamer','gainreel','merryplus','chaoqu','amii','senzhoutea','kfd','mentholatum','huangchun','noirtease','firs','zhongchong','colourfeel','milang','jefen','loli','spyder','beryl','dianpu666','amila','wanwu','baijia','13c','banrich','arena','joanmiro2018','zisenvzhuang','forever21','sangdai','monton','leyun','leqee','shipboss','ur','wandian','sxf','liby','chuse','mlatin','eisenberg','enfinitaslzqjd','tubc','mihuang','drkong','kanebo','metzpet','yunlin01','ukids','dsftszyd','wzfs','mengniunaifen','hedone','bamatea','naersi','life','lifeidea','marubi','0_taobao_61388483','yanyu','0_taobao_63079408_0','yvette','yssh','maileduo','tlbs6688','virtue','tomford','hzrs','mars','octopusme','tianjun','supaihzp','jnjwl','aivstore','bcnsl','guki','xt','taobaoxinxuan','conlia','byu','dseven','xz','bhmeibiao','ynbyyyqjd','skechersnx','yinshiguang','meiwang','sanqian','masfersu','yimini','meien001','prich','annsuu','jeep','aihu','langsha','bluelagoon','bobbibrown','epproject','0_taobao_66004592','chaowei','kisscat','moaol','xtyt','ciaodafanfan','qpet','cdxl','yyhui','yasako','xfn','duoyue','lovefarm','jxjy2017','0_taobao_70062771','liangyouzhe','liji','gm888','jinzhengda','samsungrui','apmmonaco','harson','markless','aisleep','wolong123','zhaogui','muchuan','lrlzc','hozxl','liuliumei','jiayiqijiandian','beimei','0_taobao_116718693','xzydtm','artka','keaiyuansu123','yaman','fitti','senkni','kon','lily2','bestung','wufangzhai','akashougong','biruiji','jiangxiaoao','shangyao','meiyangushi','morun','0_taobao_36441480_0','chongbo','embryform','aidebaou','landzo','worx2018','migaino','baiyehong','zhangxiaowen','yilingjiu109','0_taobao_70510415_0','cottontown','lansur','drwu','vivinevo','kazafei','mikibana2016','morefood','haichuan','hcy19880717','snbl','yxdr','yaying','insoftb','tcl','dabao','woog2005','canbo1988','liangsanshi','kinhom','zendure','gbzxj','fullw1856','huanlejiaoyang','hinabook64013086','colawill','nuosiqing','hchy8888','sixi','aivei','naivee','mojin1203','beidou']-->
+        <!--let minus = $(unique_tmp2).not(normal_tennat).toArray();-->
+        <!--console.log("差集是:", minus)-->
+        var html = ""
+            html += "<thead>";
+            html +=    "<tr><th></th><th width='100'>"+ "问题租户总数" + "</th><th width='100'>"+ "问题租户列表" + "</th></tr>"
+            html += "</thead>";
+            html += "</tbody>";
+            //html +=     "<tr><th>"+ "无问题租户" + "</th><td>" + minus.length +"</td><td style='word-wrap:break-word;word-break:break-all;' width='1100px'>"+ minus + "</td></tr>"
+            html +=     "<tr><th>"+ "平台总问题租户" + "</th><td>" + unique_tmp2.length +"</td><td style='word-wrap:break-word;word-break:break-all;' width='1100px'>"+ unique_tmp2 + "</td></tr>"
+            html +=     "<tr><th>"+ "POLARDB" + "</th><td>" + unique_polardb_summary.length +"</td><td style='word-wrap:break-word;word-break:break-all;' width='1100px'>"+ unique_polardb_summary + "</td></tr>"
+            html +=     "<tr><th>"+ "ES" + "</th><td>" + unique_es_summary.length +"</td><td style='word-wrap:break-word;word-break:break-all;' width='1100px'>"+ unique_es_summary + "</td></tr>"
+            html +=     "<tr><th>"+ "HIVE" + "</th><td>" + unique_hive_summary.length +"</td><td style='word-wrap:break-word;word-break:break-all;' width='1100px'>"+ unique_hive_summary + "</td></tr>"
+            html += "</tbody>";
+        $("#tableSummary").html(html);
+
+
+    }
+</script>
+{% endblock %}
+
+

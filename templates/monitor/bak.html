@@ -1,0 +1,130 @@
+<head>
+    <!--{% load static %},这两种都可以-->
+    {% load staticfiles %}
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript" src="{% static 'js/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.multiselect.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.quicksearch.js' %}"></script>
+
+    <link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/jquery.multiselect.css' %}">
+
+    <style type="text/css">
+		#menu{
+			font-size: 15px;
+			font-weight: bold;
+		}
+		#menu li{
+			text-decoration: none;  /*去掉前面的圆点*/
+			list-style: none;
+			float: left;
+			border: 1px solid #FFFFFF;
+			//background-color: #30DDEB;
+		}
+		<!--#menu li { display: inline-block; }-->
+		<!--#menu li a{-->
+			<!--color:#040404;-->
+			<!--text-decoration: none;-->
+			<!--margin:0px;-->
+			<!--display: block;-->
+			<!--/*内边距（即填充padding）的方式，让每个菜单变得宽一些*/-->
+            <!--<span style="white-space:pre">			</span>padding: 8px 50px;-->
+            <!--<span style="white-space:pre">			</span>height:30px;-->
+			<!--line-height:30px;-->
+			<!--text-align:center;-->
+		<!--}-->
+        <!--<span style="white-space:pre">		</span>/*定义链接的悬停效果，让导航栏更美观*/-->
+		<!--#menu li a:hover{-->
+			<!--background-color: #FCFCFC;-->
+		<!--}-->
+	    .toTop {
+				width: 70px;
+				height: 70px;
+				border-radius: 50%;
+				background: greenyellow;
+				text-align: center;
+				line-height: 70px;
+				/*返回顶部标签固定定位*/
+				position: fixed;
+				right: 35px;
+				bottom: 35px;
+				z-index: 999;
+				font-size: 14px;
+		}
+
+		.toTop:hover {
+				background: green;
+				font-size: 16px;
+				cursor: pointer;
+				color: red;
+		}
+		.toBottom {
+				width: 70px;
+				height: 70px;
+				border-radius: 50%;
+				background: greenyellow;
+				text-align: center;
+				line-height: 70px;
+				/*返回顶部标签固定定位*/
+				position: fixed;
+				right: 35px;
+				bottom: 125px;
+				z-index: 999;
+				font-size: 14px;
+		}
+
+		.toBottom:hover {
+				background: green;
+				font-size: 16px;
+				cursor: pointer;
+				color: red;
+		}
+	</style>
+
+</head>
+
+
+<body>
+
+    <div id="set-content">
+        <ul id="menu">
+            <!--平台周期合成一组-->
+            <!--<li>-->
+                <!--<label for="intervalTime">周期时间: </label>-->
+                <!--<select id="intervalTime"></select>-->
+            <!--</li>-->
+            <li>
+                <label for="intervalTimePlatCode">周期时间平台: </label>
+                <select id="intervalTimePlatCode"></select>
+            </li>
+            <li>
+
+                <label for="monitor_type_Name">统计指标:</label>
+                <select id="monitor_type_Name" multiple="multiple" size="4"></select>
+            </li>
+            <!--平台周期合成一组-->
+            <!--<li>-->
+                <!--<label for="platName">平台:</label>-->
+                <!--<select id="platName" size="1">-->
+                    <!--<option value="TAOBAO"  selected="selected">淘宝</option>-->
+                    <!--<option value="JOS">京东</option>-->
+                    <!--<option value="OFFLINE">线下</option>-->
+                    <!--<option value="YOUZAN">有赞</option></select>-->
+            <!--</li>-->
+            <li>
+                <label for="tenantName">租户名称:</label>
+                <select id="tenantName" multiple="multiple" size="4"></select>
+            </li>
+            <li>
+                <button id='query'>查询</button>
+            </li>
+            <a href="#" title="查询完毕后才会有报告,所以不要一直点">问题报告下载</a>
+        </ul>
+    </div>
+    <div id="container_summary" style="width: 1550px; height: 1500px; margin: 0 auto"></div>
+    <div id="container" style="width: 1550px; height: 500px; margin: 0 auto"></div>
+    <div class="toTop">回顶部</div>
+    <div class="toBottom">去底部</div>
+
+</body>

@@ -1,0 +1,919 @@
+{% extends 'base.html' %}
+{% block title %}接口概览{% endblock %}
+{% block css %}
+{% load staticfiles %}
+<link href="{% static 'css/interface/style.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+<link href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
+<link href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
+<script src="{% static 'js/sidebar.js' %}"></script>
+<style type="text/css">
+
+    .panel-body #search li {
+        padding: 20px;
+        //margin:50px;
+        //display: inline-block;
+        //float:left;
+        text-decoration: none;  /*去掉前面的圆点*/
+			list-style: none;
+			float: left;
+			border: 1px solid #FFFFFF;
+    }
+    .panel-body{
+        font-size: 15px;
+		font-weight: bold;
+    }
+</style>
+
+{% endblock %}
+{% block menu %}
+<ul class="nav navbar-nav">
+    <li class="active"><a href="/index/">主页</a></li>
+    <li class="active"><a href="/monitor/">数据监控</a></li>
+    <li class="active"><a href="/interface/">接口测试</a></li>
+    <li class="active"><a href="/performance/">性能测试</a></li>
+    <li class="active"><a href="/tool/">测试工具</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/interface">
+              <span class="menu-title">面板</span>
+                <i class="glyphicon glyphicon-home"></i>
+            </a>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/interfaceGroup">
+              <span class="menu-title">接口组总览</span>
+                <i class="glyphicon glyphicon-th-list"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/interfaceList">
+                <span class="menu-title">接口概览</span>
+                <i class="glyphicon glyphicon-th"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#testcases">
+              <span class="menu-title">用例概览</span>
+                <i class="glyphicon glyphicon-chevron-right"></i>
+            </a>
+            <div class="collapse in" id="testcases">
+                <ul>
+                    <li class="nav-item"> <a class="nav-link" href="/interface/allTemplate">接口参数配置模版</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/interface/allBasicTestCase">基础用例</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/interface/customizeTestCase">自定义用例</a></li>
+                </ul>
+            </div>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/allTestCaseSuit">
+                <span class="menu-title">用例集合</span>
+                <i class="glyphicon glyphicon-list-alt"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/testCaseReport">
+                <span class="menu-title">用例报告</span>
+                <i class="glyphicon glyphicon-align-left"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<div class="center">
+    <!--<h3 class="heading fl">面包屑导航预留</h3>-->
+    <!--{% if message %}-->
+        <!--<div class="alert alert-warning">{{ message }}</div>-->
+    <!--{% endif %}-->
+    <div id="interfaceListTitle">
+        <a href="/interface/addInterfaces">
+            <button type="button" class="btn btn-primary">添加接口</button>
+        </a>
+        <button type="button" class="btn btn-primary" style="background-color:hsl(120,65%,75%)" onclick="auto_add_interfaces()">自动抓取接口</button>
+    </div>
+    <div class="fixed-table-toolbar">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">查询条件</h3>
+            </div>
+            <div class="panel-body">
+                <ul id="search">
+                    <li>
+                        <input id="self_interface_add_checkbox" type="checkbox" onclick="onClickHander(this)">只展示我添加的接口</input>
+                    </li>
+                    <li>
+                        <label for="project_category">所属项目:</label>
+                        <select name="project_category" id="project_category"></select>
+                    </li>
+                    <li>
+                        <label for="interface_list">接口组:</label>
+                        <input id="interface_list" placeholder="请输入接口组名称查询">
+                    </li>
+                    <li>
+                        <label for="interface_name">接口名称:</label>
+                        <input id="interface_name" placeholder="请输入接口名称查询">
+                    </li>
+                    <li>
+                        <button id="search-button" >查询</button>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+        <!-- 修改数据模态框（Modal） -->
+        <form id ="update_interface_form" action="#" method="POST" class="form-horizontal" role="form">
+            {% csrf_token %}
+            <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                            </button>
+                            <h4 class="modal-title" id="updateModalLabel">
+                                修改接口
+                            </h4>
+                        </div>
+                        {# 模态框body #}
+                        <!--<div class="modal-body" style="height: 100%;">-->
+                        <div class="modal-body" style="height: 100%;">
+                            <div class="form-group">
+                                <!--<label for="update_id" class="col-sm-3 control-label">序列号</label>-->
+                                <div class="col-sm-7" hidden="hidden">
+                                    <input type="text" class="form-control"  name="update_id" id="update_id">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_name" class="col-sm-3 control-label">接口名称</label>
+                                <div class="col-sm-7">
+                                    <input type="text" class="form-control"  name="update_interface_name" id="update_interface_name" placeholder="请输入接口名称">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_group" class="col-sm-3 control-label">所属接口组</label>
+                                <div class="col-sm-7">
+                                    <select data-placeholder="选择接口组..." class="form-control" name="update_interface_group" id="update_interface_group"></select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_desc" class="col-sm-3 control-label">接口描述</label>
+                                <div class="col-sm-7">
+                                    <!--<input type="text" class="form-control"  maxlength="256" name="update_project_desc" id="update_project_desc" placeholder="请输入项目描述">-->
+                                    <Textarea class="form-control"  maxlength="256" name="update_interface_desc" id="update_interface_desc" placeholder="请输入接口描述"></Textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_address" class="col-sm-3 control-label">接口地址</label>
+                                <div class="col-sm-7">
+                                    <input type="text" class="form-control"  name="update_interface_address" id="update_interface_address" placeholder="请输入接口地址">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_request_type" class="col-sm-3 control-label">请求方式</label>
+                                <div class="col-sm-7">
+                                    <select data-placeholder="选择请求方式..." class="form-control" name="update_interface_request_type" id="update_interface_request_type"></select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_header" class="col-sm-3 control-label">接口头信息</label>
+                                <div class="col-sm-7">
+                                    <Textarea class="form-control"  maxlength="256" name="update_interface_header" id="update_interface_header" placeholder="请输入接口描述"></Textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_param" class="col-sm-3 control-label">接口参数</label>
+                                <div class="col-sm-7">
+                                    <Textarea class="form-control"  maxlength="256" name="update_interface_param" id="update_interface_param" placeholder="请输入接口描述"></Textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_body" class="col-sm-3 control-label">接口信息体</label>
+                                <div class="col-sm-7">
+                                    <Textarea class="form-control"  maxlength="256" name="update_interface_body" id="update_interface_body" placeholder="请输入接口描述"></Textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_status" class="col-sm-3 control-label">接口状态</label>
+                                <div class="col-sm-7">
+                                    <select data-placeholder="选择请求方式..." class="form-control" name="update_interface_status" id="update_interface_status"></select>
+                                </div>
+                            </div>
+                        </div>
+                        {#模态框底部#}
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <input type="button" class="btn btn-primary" value="提交"  onclick="update_interface_action()"/>
+                            <!--<input type="submit" class="btn btn-primary" value="提交"/>-->
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+        </form>
+        <table id="mytable" class="table table-hover"></table>
+
+    </div>
+    <form id="add_test_suit_form" action="#" method="POST" class="form-horizontal" role="form">
+            {% csrf_token %}
+            <div class="modal fade" id="addTestSuitModal" tabindex="-1" role="dialog" aria-labelledby="addTestSuitModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                            </button>
+                            <h4 class="modal-title" id="addTestSuitModalLabel">
+                                新增数据
+                            </h4>
+                        </div>
+                        {# 模态框body #}
+                        <div class="modal-body" style="height: 100%;">
+                            <div class="form-group">
+                                <label for="add_test_suit_name" class="col-sm-3 control-label">测试集名称</label>
+                                <div class="col-sm-7">
+                                    <input type="text" class="form-control"  name="add_test_suit_name" id="add_test_suit_name" placeholder="请输入测试集名称">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="add_param_template" class="col-sm-3 control-label">参数模板</label>
+                                <div class="col-sm-7">
+                                    <select data-placeholder="选择参数模板" class="form-control" name="add_param_template" id="add_param_template"></select>
+                                </div>
+                            </div>
+                            <div class="form-group" hidden="hidden">
+                                 <label for="add_apply_interface_name" class="col-sm-3 control-label">测试集名称</label>
+                                <div class="col-sm-7">
+                                    <input type="text" class="form-control"  name="add_apply_interface_name" id="add_apply_interface_name" placeholder="请输入测试集名称">
+                                </div>
+                            </div>
+                        </div>
+                        {#模态框底部#}
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <input type="button" class="btn btn-primary" value="提交"  onclick="add_test_suit_action()"/>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+        </form>
+
+
+</div>
+<div class="right"></div>
+
+
+
+    <!--<hr>-->
+    <!--<footer class="footer">-->
+        <!--<p>Copyright © Shuyun All Rights Reserved</p>-->
+    <!--</footer>-->
+<!--<footer class="footer">-->
+    <!--<p>Copyright © Shuyun All Rights Reserved.</p>-->
+<!--</footer>-->
+{% endblock %}
+
+{% block script%}
+
+<script type="text/javascript">
+    project_category = {}
+    $.get("/interface/getProjectCategory",
+        function(resultDict)
+        {
+            project_category = resultDict;
+            console.log("project_category1", project_category)
+            var update_project_category_value = null;
+            for(var key in project_category)
+            {
+                project_category_value = "<option value='" + key + "'>" + project_category[key] + "</option>";
+                $("#project_category").append(project_category_value);
+
+            }
+         },
+        "json"
+    );
+
+</script>
+
+<script type="text/javascript">
+    var checked=null;
+    $('#mytable').bootstrapTable({
+        url:"/interface/getInterfaceList",     //从后台获取数据时，可以是json数组，也可以是json对象
+        dataType: "json",
+        method: 'get',                      //请求方式（*）
+        //toolbar: '#toolbar',                //工具按钮用哪个容器
+        toolbar: '#exampleToolbar',
+        striped: true,                      //是否显示行间隔色
+        cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+        pagination: true,                   //是否显示分页（*）
+        sortable: true,                     //是否启用排序
+        //sortOrder: "asc",                   //排序方式
+        //queryParams: oTableInit.queryParams,//传递参数（*）
+        sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）,数据为json数组时写client，json对象时（有total和rows时）这里要为server方式，写client列表无数据
+        pageNumber: 1,                       //初始化加载第一页，默认第一页
+        pageSize: 10,                       //每页的记录行数（*）
+        pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+        search: false,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+        strictSearch: true,
+        showColumns: true,                  //是否显示所有的列
+        showRefresh: true,                  //是否显示刷新按钮
+        minimumCountColumns: 2,             //最少允许的列数
+        clickToSelect: true,                //是否启用点击选中行
+        {#height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度#}
+        uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+        showToggle: false,                    //是否显示详细视图和列表视图的切换按钮
+        cardView: false,                    //是否显示详细视图
+        detailView: false,                   //是否显示父子表
+        idField: 'project_name',          //指定主键
+        singleSelect: true,                //开启单选,想要获取被选中的行数据必须要有该参数
+
+        //得到查询的参数，会在url后面拼接，如：?rows=5&page=2&sortOrder=asc&search_kw=&_=1564105760651
+        queryParams: function (params) {
+            //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+            var query_params = {
+                rows: params.limit,                         //页面大小
+                page: (params.offset / params.limit) + 1,   //页码
+                sort: params.sort,      //排序列名
+                sortOrder: params.order, //排位命令（desc，asc
+
+                //查询框中的参数传递给后台
+                search_kw: $('#search-keyword').val(), // 请求时向服务端传递的参数
+                creator: checked,
+                };
+                return query_params;
+            },
+
+        columns: [
+            {
+                //checkbox:true  //第一列显示复选框
+                //singleSelect:true
+                field : 'checked',
+                checkbox : true,
+                visible: true,
+                formatter : stateFormatter
+            },
+            {
+                field: 'id',  //返回数据rows数组中的每个字典的键名与此处的field值要保持一致
+                title: '序列号'
+            },
+            {
+                field: 'interface_name',
+                title: '接口名称'
+            },
+            {
+                field: 'interface_group_name',
+                title: '所属接口组'
+            },
+            {
+                field: 'interface_address',
+                title: '接口地址'
+            },
+            {
+                field: 'interface_desc',
+                title: '接口描述'
+            },
+            {
+                field: 'interface_request_type',
+                title: '请求方式'
+            },
+            {
+                field: 'interface_headers',
+                title: '接口头信息'
+            },
+            {
+                field: 'interface_parameters',
+                title: '接口参数'
+            },
+            {
+                field: 'interface_body',
+                title: '接口信息体'
+            },
+            {
+                field: 'interface_creator',
+                title: '创建人',
+            }
+            ,
+            {
+                field: 'interface_create_time',
+                title: '创建时间'
+            },
+            {
+                field: 'interface_status',
+                title: '接口状态'
+            },
+            {
+                field: 'operate',
+                title: '操作',
+                width: 120,
+                align: 'center',
+                valign: 'middle',
+                formatter: actionFormatter,
+            },
+        ],
+    });
+
+
+    function actionFormatter(value, row, index) {
+        var id = index;
+        var data = JSON.stringify(row);
+        var result = "";
+
+        result += "<a href='javascript:;' class='btn btn-xs blue' onclick=\"EditViewById('" + id + "')\" title='编辑'><span class='glyphicon glyphicon-pencil'></span></a>";
+        result += "<a href='javascript:;' class='btn btn-xs red' onclick=\"DeleteByIds('" + id + "')\" title='删除'><span class='glyphicon glyphicon-remove'></span></a>";
+        result += "<a href='javascript:;' class='btn btn-xs red' onclick=\"GenerateBasicTestSuit('" + id + "')\" title='创建基础用例集'><span class='glyphicon glyphicon-tree-conifer'></span></a>";
+        return result;
+    }
+
+    function stateFormatter(value, row, index) {
+        if (row.state == true)
+            return {
+                disabled : true,//设置是否可用
+                checked : true//设置选中
+            };
+        return value;
+    }
+
+    function edit(){
+        // 获取当前行
+        var row=$("#mytable").bootstrapTable('getSelections');
+        console.log("row[0]", row[0].project_name)
+        alert(row[0].id, row[0].project_name)
+    }
+    function GenerateBasicTestSuit(index){
+        var data = JSON.stringify($("#mytable").bootstrapTable('getData'));
+        var data_json = JSON.parse(data); //data_json和data_json2一样都是json对象
+        console.log("data_json:", data_json);
+        console.log("index:", index);
+        console.log("selectid:", data_json[index].id, data_json[index].interface_name, data_json[index].interface_group_name)
+        selected_interface_id = data_json[index].id
+        selected_interface_name = data_json[index].interface_name
+        selected_interface_group_name = data_json[index].interface_group_name
+        default_test_case_suit_name = selected_interface_group_name + "-" + selected_interface_name + "-代码自动生成"
+        console.log("default_test_case_suit_name:", default_test_case_suit_name)
+        //window.location.href="basicTestCase";
+        $("#add_apply_interface_name").val(selected_interface_name)
+        $.get("/interface/template",
+            function(resultDict)
+            {
+                test_case_param_template = resultDict;
+                console.log("test_case_param_template:", test_case_param_template)
+                var update_interface_group_value = null;
+                for(var key in test_case_param_template){
+                    console.log("value:",test_case_param_template[key])
+                    if(test_case_param_template[key] == "默认模板")
+                    {
+                        //此处的key本身应该用key，不写具体值，但是因为为了简单直接这么写了，因为使用了用例模板的不能编辑
+                        update_interface_group_value = "<option value='" + test_case_param_template[key] + "' selected=selected>" + test_case_param_template[key] + "</option>";
+                        console.log("update_interface_group_value1:", update_interface_group_value)
+                        $("#add_param_template").append(update_interface_group_value);
+                    }
+                    else
+                    {
+                        update_interface_group_value = "<option value='" + test_case_param_template[key] + "'>" + test_case_param_template[key] + "</option>";
+                        console.log("update_interface_group_value2:", update_interface_group_value)
+                        $("#add_param_template").append(update_interface_group_value);
+                    }
+                }
+                $("#add_test_suit_name").val(default_test_case_suit_name)
+            },
+            "json"
+        );
+        $('#addTestSuitModal').modal('show')
+
+    }
+$(function ()
+{
+     $('.navbar-sidebar.nav li').find('a').each(function () {
+            if (this.href == document.location.href || document.location.href.search(this.href) >= 0) {
+                $(this).parent().siblings('li').removeClass('active');
+                $(this).parent().addClass('active');
+            }
+        });
+});
+    function DeleteByIds(index){
+        var data = JSON.stringify($("#mytable").bootstrapTable('getData'));
+        var data_json = JSON.parse(data); //data_json和data_json2一样都是json对象
+        console.log("data_json:", data_json);
+        console.log("index:", index);
+        console.log("deleteid:", data_json[index].id)
+        Ewin.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                if (!e) {
+                    return;
+                }
+                $.ajaxSetup({
+                    data:{csrfmiddlewaretoken:'{{ csrf_token }}'}
+                })
+                $.ajax({
+                    type: "POST",
+                    url: "/interface/delInterfaces",
+                    data: { "delete_id": data_json[index].id},
+                    async:false,
+                    success: function (data) {
+                        if (data.status == "success") {
+                            toastr.success('删除数据成功');
+                            $("#mytable").bootstrapTable('refresh');
+                            //window.location.reload();//刷新当前页面
+                        }
+                    },
+                    error: function (data) {
+                        toastr.error('删除失败',data.status);
+                    },
+                    dataType : "json"
+                });
+            });
+    }
+
+    function EditViewById(index){
+        $("#update_interface_group").empty()
+        $("#update_interface_request_type").empty()
+        $("#update_interface_status").empty()
+        var data = JSON.stringify($("#mytable").bootstrapTable('getData')); //获取全部数据
+        var data_json = JSON.parse(data); //data_json和data_json2一样都是json对象
+        console.log("data_json:", data_json);
+        console.log("index:", index);
+        //根据index找到对应行数据，填充数据到修改模态框
+        $("#update_id").val(data_json[index].id);
+        $("#update_interface_name").val(data_json[index].interface_name);
+        $("#update_interface_address").val(data_json[index].interface_address);
+        $("#update_interface_request_type").val(data_json[index].interface_request_type);
+        $("#update_interface_header").val(data_json[index].interface_headers);
+        $("#update_interface_param").val(data_json[index].interface_parameters);
+        $("#update_interface_body").val(data_json[index].interface_body);
+        $("#update_interface_desc").val(data_json[index].interface_desc);
+        $("#update_interface_status").val(data_json[index].interface_status);
+        console.log("interface_group_name is:",data_json[index].interface_group_name)
+        interface_group = {}
+        $.get("/interface/getAllInterfaceGroup",
+            function(resultDict)
+            {
+                interface_group = resultDict;
+                console.log("interface_group1", interface_group)
+                var update_interface_group_value = null;
+                for(var key in interface_group)
+                if(interface_group[key] == data_json[index].interface_group_name)
+                {
+                    update_interface_group_value = "<option value='" + key + "' selected=selected>" + data_json[index].interface_group_name + "</option>";
+                    $("#update_interface_group").append(update_interface_group_value);
+                }
+                else
+                {
+                    update_interface_group_value = "<option value='" + key + "'>" + interface_group[key] + "</option>";
+                    $("#update_interface_group").append(update_interface_group_value);
+                }
+            },
+            "json"
+        );
+        interface_status = {
+            "valid": "有效",
+            "invalid": "无效"
+        }
+        interface_request_type = {
+            "get": "GET",
+            "post": "POST",
+            "put": "PUT",
+            "delete": "DELETE",
+            "head": "HEAD",
+            "options": "OPTIONS",
+            "trace": "TRACE",
+            "patch": "PATCH",
+            "connect": "CONNECT"
+        }
+        for (var key in interface_status)
+        {
+            if(interface_status[key] == data_json[index].interface_status)
+            {
+                update_interface_status_value = "<option value='" + key + "' selected=selected>" + data_json[index].interface_status + "</option>";
+                $("#update_interface_status").append(update_interface_status_value);
+            }
+            else
+            {
+                update_interface_status_value = "<option value='" + key + "'>" + interface_status[key] + "</option>";
+                $("#update_interface_status").append(update_interface_status_value);
+            }
+        }
+        for (var key in interface_request_type)
+        {
+            if(interface_request_type[key] == data_json[index].interface_request_type)
+            {
+                update_interface_request_type_value = "<option value='" + key + "' selected=selected>" + data_json[index].interface_request_type + "</option>";
+                $("#update_interface_request_type").append(update_interface_request_type_value);
+            }
+            else
+            {
+                update_interface_request_type_value = "<option value='" + key + "'>" + interface_request_type[key] + "</option>";
+                $("#update_interface_request_type").append(update_interface_request_type_value);
+            }
+        }
+        //弹出修改模态框，非新增模态框
+        $('#updateModal').modal('show')
+    }
+
+    // 搜索查询按钮触发事件
+    $(function() {
+        $("#search-button").click(function () {
+        $('#mytable').bootstrapTable(('refresh')); // 很重要的一步，刷新url！
+        $('#search-keyword').val()
+        })
+    })
+
+    //重置搜索条件
+    function clean(){
+        //先清空
+        $('#search-keyword').val('');
+        //清空后查询条件为空了，再次刷新页面，就是全部数据了
+        $('#mytable').bootstrapTable(('refresh')); // 很重要的一步，刷新url！
+    }
+    //搜索我的项目
+    function onClickHander(obj){
+        if(obj.checked){
+            checked="checked"
+
+        }
+        else{
+            checked=null
+        }
+
+    }
+    //名称重复或者异常场景
+    function alertFunction(data){
+	    alert(data);
+    }
+    {% if msg == 'success' %}
+        alertFunction("{{ msg }}")
+    {% endif %}
+
+
+</script>
+<script type="text/javascript">
+    {#设置弹出提示框属性#}
+    toastr.options = { // toastr配置
+        "closeButton": true, //是否显示关闭按钮
+        "debug": false, //是否使用debug模式
+        "progressBar": true, //是否显示进度条，当为false时候不显示；当为true时候，显示进度条，当进度条缩短到0时候，消息通知弹窗消失
+        "positionClass": "toast-top-center",//显示的动画时间
+        "showDuration": "400", //显示的动画时间
+        "hideDuration": "1000", //消失的动画时间
+        "timeOut": "7000", //展现时间
+        "extendedTimeOut": "1000", //加长展示时间
+        "showEasing": "swing", //显示时的动画缓冲方式
+        "hideEasing": "linear", //消失时的动画缓冲方式
+        "showMethod": "fadeIn", //显示时的动画方式
+        "hideMethod": "fadeOut" //消失时的动画方式
+    }
+
+    function auto_add_interfaces(){
+        $.ajaxSetup({
+                    data:{csrfmiddlewaretoken:'{{ csrf_token }}'}
+                })
+        $.ajax({
+            cache:false,
+            type: "POST",//方法类型
+            dataType: "json",//预期服务器返回的数据类型
+            url: "/interface/autoAddInterfaces" ,
+            async:false,
+            success: function (data) {
+                if(data.msg == "success"){
+                    toastr.success('抓取接口数据成功');
+                    {#刷新表格数据#}
+                    $("#mytable").bootstrapTable('refresh');
+                }
+            },
+            error: function() {
+                toastr.error(data.msg)
+            }
+        });
+    }
+
+    function add_test_suit_action() {
+        $.ajax({
+            cache:false,
+            type: "POST",//方法类型
+            dataType: "json",//预期服务器返回的数据类型
+            url: "/interface/testCaseSuit" ,//url
+            data: $('#add_test_suit_form').serialize(), //将模态框的form表单数据序列化，以便提交到后台
+            async:false,
+
+            success: function (data) {
+                if(data.msg == "success"){
+                    {#关闭模态框并清除框内数据，否则下次打开还是上次的数据#}
+                    document.getElementById("add_test_suit_form").reset();
+                    $('#addModal').modal('hide');
+                     {#刷新表格数据#}
+                    $("#mytable").bootstrapTable('refresh');
+                    console.log("$('#add_test_suit_form').serialize():", $('#add_test_suit_form').serialize())
+                    toastr.success('提交数据成功');
+                    window.location.href="allTestCaseSuit";
+                }
+                else if(data.msg == "duplicate") {
+                    toastr.warning('名称重复');
+                }
+                else{
+                    toastr.error('保存失败')
+                }
+            },
+            error: function(error) {
+                toastr.error(error)
+            }
+        });
+    }
+
+    {#提交数据函数#}
+    function update_interface_action() {
+        $.ajax({
+            cache:false,
+            type: "POST",//方法类型
+            dataType: "json",//预期服务器返回的数据类型
+            url: "/interface/editInterfaces" ,//url
+            data: $('#update_interface_form').serialize(), //将模态框的form表单数据序列化，以便提交到后台
+            async:false,
+
+            success: function (data) {
+                if(data.msg == "success"){
+                    {#关闭模态框并清除框内数据，否则下次打开还是上次的数据#}
+                    document.getElementById("update_interface_form").reset();
+                    $('#updateModal').modal('hide');
+                    toastr.success('提交数据成功');
+
+                    <!--window.event.returnValue = false;-->
+                    <!--window.event.returnValue = true;-->
+
+                    {#刷新表格数据#}
+                    $("#mytable").bootstrapTable('refresh');
+                }
+                else if(data.msg == "duplicate") {
+                    toastr.warning('接口名称重复');
+                }
+                else{
+                    toastr.error('保存失败')
+                }
+            },
+            error: function() {
+                toastr.error("请输入所有数据")
+            }
+        });
+    }
+</script>
+<script type="text/javascript">
+    (function ($) {
+
+    window.Ewin = function () {
+        var html = '<div id="[Id]" class="modal fade" role="dialog" aria-labelledby="modalLabel">' +
+                              '<div class="modal-dialog modal-sm">' +
+                                  '<div class="modal-content">' +
+                                      '<div class="modal-header">' +
+                                          '<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
+                                          '<h4 class="modal-title" id="modalLabel">[Title]</h4>' +
+                                      '</div>' +
+                                      '<div class="modal-body">' +
+                                      '<p>[Message]</p>' +
+                                      '</div>' +
+                                       '<div class="modal-footer">' +
+        '<button type="button" class="btn btn-default cancel" data-dismiss="modal">[BtnCancel]</button>' +
+        '<button type="button" class="btn btn-primary ok" data-dismiss="modal">[BtnOk]</button>' +
+    '</div>' +
+                                  '</div>' +
+                              '</div>' +
+                          '</div>';
+
+
+        var dialogdHtml = '<div id="[Id]" class="modal fade" role="dialog" aria-labelledby="modalLabel">' +
+                              '<div class="modal-dialog">' +
+                                  '<div class="modal-content">' +
+                                      '<div class="modal-header">' +
+                                          '<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
+                                          '<h4 class="modal-title" id="modalLabel">[Title]</h4>' +
+                                      '</div>' +
+                                      '<div class="modal-body">' +
+                                      '</div>' +
+                                  '</div>' +
+                              '</div>' +
+                          '</div>';
+        var reg = new RegExp("\\[([^\\[\\]]*?)\\]", 'igm');
+        var generateId = function () {
+            var date = new Date();
+            return 'mdl' + date.valueOf();
+        }
+        var init = function (options) {
+            options = $.extend({}, {
+                title: "操作提示",
+                message: "提示内容",
+                btnok: "确定",
+                btncl: "取消",
+                width: 200,
+                auto: false
+            }, options || {});
+            var modalId = generateId();
+            var content = html.replace(reg, function (node, key) {
+                return {
+                    Id: modalId,
+                    Title: options.title,
+                    Message: options.message,
+                    BtnOk: options.btnok,
+                    BtnCancel: options.btncl
+                }[key];
+            });
+            $('body').append(content);
+            $('#' + modalId).modal({
+                width: options.width,
+                backdrop: 'static'
+            });
+            $('#' + modalId).on('hide.bs.modal', function (e) {
+                $('body').find('#' + modalId).remove();
+            });
+            return modalId;
+        }
+
+        return {
+            alert: function (options) {
+                if (typeof options == 'string') {
+                    options = {
+                        message: options
+                    };
+                }
+                var id = init(options);
+                var modal = $('#' + id);
+                modal.find('.ok').removeClass('btn-success').addClass('btn-primary');
+                modal.find('.cancel').hide();
+
+                return {
+                    id: id,
+                    on: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            modal.find('.ok').click(function () { callback(true); });
+                        }
+                    },
+                    hide: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            modal.on('hide.bs.modal', function (e) {
+                                callback(e);
+                            });
+                        }
+                    }
+                };
+            },
+            confirm: function (options) {
+                var id = init(options);
+                var modal = $('#' + id);
+                modal.find('.ok').removeClass('btn-primary').addClass('btn-success');
+                modal.find('.cancel').show();
+                return {
+                    id: id,
+                    on: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            modal.find('.ok').click(function () { callback(true); });
+                            modal.find('.cancel').click(function () { callback(false); });
+                        }
+                    },
+                    hide: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            modal.on('hide.bs.modal', function (e) {
+                                callback(e);
+                            });
+                        }
+                    }
+                };
+            },
+            dialog: function (options) {
+                options = $.extend({}, {
+                    title: 'title',
+                    url: '',
+                    width: 800,
+                    height: 550,
+                    onReady: function () { },
+                    onShown: function (e) { }
+                }, options || {});
+                var modalId = generateId();
+
+                var content = dialogdHtml.replace(reg, function (node, key) {
+                    return {
+                        Id: modalId,
+                        Title: options.title
+                    }[key];
+                });
+                $('body').append(content);
+                var target = $('#' + modalId);
+                target.find('.modal-body').load(options.url);
+                if (options.onReady())
+                    options.onReady.call(target);
+                target.modal();
+                target.on('shown.bs.modal', function (e) {
+                    if (options.onReady(e))
+                        options.onReady.call(target, e);
+                });
+                target.on('hide.bs.modal', function (e) {
+                    $('body').find(target).remove();
+                });
+            }
+        }
+    }();
+})(jQuery);
+
+</script>
+
+{% endblock %}

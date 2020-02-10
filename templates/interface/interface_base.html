@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}接口测试{% endblock %}
+{% block css %}
+{% load staticfiles %}
+<link href="{% static 'css/interface/style.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+<script src="{% static 'js/sidebar.js' %}"></script>
+{% endblock %}
+{% block menu %}
+<ul class="nav navbar-nav">
+    <li class="active"><a href="/index/">主页</a></li>
+    <li class="active"><a href="/monitor/">数据监控</a></li>
+    <li class="active"><a href="/interface/">接口测试</a></li>
+    <li class="active"><a href="/performance/">性能测试</a></li>
+    <li class="active"><a href="/tool/">测试工具</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/interface">
+              <span class="menu-title">面板</span>
+                <i class="glyphicon glyphicon-home"></i>
+            </a>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/interfaceGroup">
+              <span class="menu-title">接口组总览</span>
+                <i class="glyphicon glyphicon-th-list"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/interfaceList">
+                <span class="menu-title">接口概览</span>
+                <i class="glyphicon glyphicon-th"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#testcases">
+              <span class="menu-title">用例概览</span>
+                <i class="glyphicon glyphicon-chevron-right"></i>
+            </a>
+            <div class="collapse in" id="testcases">
+                <ul>
+                    <li class="nav-item"> <a class="nav-link" href="/interface/allTemplate">接口参数配置模版</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/interface/allBasicTestCase">基础用例</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/interface/customizeTestCase">自定义用例</a></li>
+                </ul>
+            </div>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/allTestCaseSuit">
+                <span class="menu-title">用例集合</span>
+                <i class="glyphicon glyphicon-list-alt"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/testCaseSuitReport">
+                <span class="menu-title">用例报告</span>
+                <i class="glyphicon glyphicon-align-left"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<!--<div class="center">-->
+    <!--&lt;!&ndash;<div class="leaderboard">&ndash;&gt;-->
+        <!--&lt;!&ndash;<h1>Learn. Practice. Develop.</h1>&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;<hr>&ndash;&gt;-->
+    <!--&lt;!&ndash;<footer class="footer">&ndash;&gt;-->
+        <!--&lt;!&ndash;<p>Copyright © Shuyun All Rights Reserved</p>&ndash;&gt;-->
+    <!--&lt;!&ndash;</footer>&ndash;&gt;-->
+
+
+<!--</div>-->
+<!--<footer class="footer">-->
+    <!--<p>Copyright © Shuyun All Rights Reserved.</p>-->
+<!--</footer>-->
+{% block main_content %}
+{% endblock %}
+{% endblock %}
+
+
+

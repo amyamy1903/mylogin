@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}主页{% endblock %}
+{% block css %}
+{% load staticfiles %}
+<link href="{% static 'css/index_style.css' %}" rel="stylesheet">
+{% endblock %}
+{% block menu %}
+<ul class="nav navbar-nav">
+    <li class="active"><a href="/index/">主页</a></li>
+    <li class="active"><a href="/monitor/">数据监控</a></li>
+    <li class="active"><a href="/interface/">接口测试</a></li>
+    <li class="active"><a href="/performance/">性能测试</a></li>
+    <li class="active"><a href="/tool/">测试工具</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+    <!--{% if request.session.is_login %}-->
+    <!--<h1>你好,{{ request.session.user_name }}！欢迎回来！</h1>-->
+    <!--{% else %}-->
+    <!--<h1>你尚未登录</h1>-->
+    <!--{% endif %}-->
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <!--<li class="nav-item nav-profile">-->
+            <!--<a href="#" class="nav-link">-->
+              <!--<div class="nav-profile-image">-->
+                <!--<img src="images/faces/face1.jpg" alt="profile">-->
+                <!--<span class="login-status online"></span> &lt;!&ndash;change to offline or busy as needed&ndash;&gt;-->
+              <!--</div>-->
+              <!--<div class="nav-profile-text d-flex flex-column">-->
+                <!--<span class="font-weight-bold mb-2">David Grey. H</span>-->
+                <!--<span class="text-secondary text-small">Project Manager</span>-->
+              <!--</div>-->
+              <!--<i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>-->
+            <!--</a>-->
+          <!--</li>-->
+        <li class="nav-item active">
+            <a class="nav-link" href="/index">
+              <span class="menu-title">Dashboard</span>
+                <i class="glyphicon glyphicon-home"></i>
+
+              <!--<i class="mdi mdi-home menu-icon"></i>-->
+            </a>
+
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#ui-basic">
+            <!--<a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">-->
+              <span class="menu-title">Example</span>
+                <i class="glyphicon glyphicon-chevron-right"></i>
+              <!--<i class="menu-arrow"></i>-->
+              <!--<i class="mdi mdi-crosshairs-gps menu-icon"></i>-->
+
+            </a>
+            <div class="collapse" id="ui-basic">
+                <ul>
+                    <li class="nav-item"> <a class="nav-link" href="/index/example1">example1</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/index/example2">example2</a></li>
+                </ul>
+
+                <!--<ul class="nav flex-column sub-menu">-->
+                <!--<li class="nav-item"> <a class="nav-link" href="/xxx.html">Buttons</a></li>-->
+                <!--<li class="nav-item"> <a class="nav-link" href="/xxx.html">Typography</a></li>-->
+                <!--</ul>-->
+            </div>
+          </li>
+        <!--<li class="nav-item">-->
+            <!--<a class="nav-link" href="/xxx.html">-->
+              <!--<span class="menu-title">Icons</span>-->
+              <!--<i class="mdi mdi-contacts menu-icon"></i>-->
+            <!--</a>-->
+          <!--</li>-->
+        <li class="nav-item">
+            <a class="nav-link" href="/index">
+              <span class="menu-title">Forms</span>
+                <i class="glyphicon glyphicon-th-list"></i>
+              <!--<i class="mdi mdi-format-list-bulleted menu-icon"></i>-->
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/index/charts">
+                <span class="menu-title">Charts</span>
+                <i class="glyphicon glyphicon-stats"></i>
+                <!--<i class="mdi mdi-chart-bar menu-icon"></i>-->
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/index/tables">
+                <span class="menu-title">Tables</span>
+                <i class="glyphicon glyphicon-th"></i>
+                <!--<i class="mdi mdi-table-large menu-icon"></i>-->
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<div class="right">
+    <div class="leaderboard">
+            <h1>Learn. Practice. Develop.</h1>
+            <p>w3cschool offers web development tutorials. We believe in Open Source. Love standards. And prioritize simplicity 				             and readability while serving content.</p>
+            <p><a class="btn btn-success btn-large">Join w3cschool now</a></p>
+          </div>
+          <div class="row-fluid">
+            <div class="span4">
+              <h2>Learn</h2>
+              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+              <p><a class="btn btn-success btn-large" href="#">Start Learning now</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>Practice</h2>
+              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+              <p><a class="btn btn-success btn-large" href="#">Start percticing now</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>Develop</h2>
+              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+              <p><a class="btn btn-success btn-large" href="#">Start developing now</a></p>
+            </div><!--/span-->
+          </div><!--/row-->
+    <hr>
+    <footer class="footer">
+        <p>Copyright © Shuyun All Rights Reserved</p>
+    </footer>
+
+</div>
+<!--<footer class="footer">-->
+    <!--<p>Copyright © Shuyun All Rights Reserved.</p>-->
+<!--</footer>-->
+{% endblock %}

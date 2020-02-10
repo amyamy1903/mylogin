@@ -1,0 +1,644 @@
+{% extends 'base.html' %}
+{% block title %}接口组总览{% endblock %}
+{% block css %}
+{% load staticfiles %}
+<link href="{% static 'css/interface/style.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+<link href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
+<link href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
+<script src="{% static 'js/sidebar.js' %}"></script>
+{% endblock %}
+{% block menu %}
+<ul class="nav navbar-nav">
+    <li class="active"><a href="/index/">主页</a></li>
+    <li class="active"><a href="/monitor/">数据监控</a></li>
+    <li class="active"><a href="/interface/">接口测试</a></li>
+    <li class="active"><a href="/performance/">性能测试</a></li>
+    <li class="active"><a href="/tool/">测试工具</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/interface">
+              <span class="menu-title">面板</span>
+                <i class="glyphicon glyphicon-home"></i>
+            </a>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/interfaceGroup">
+              <span class="menu-title">接口组总览</span>
+                <i class="glyphicon glyphicon-th-list"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/interfaceList">
+                <span class="menu-title">接口概览</span>
+                <i class="glyphicon glyphicon-th"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#testcases">
+              <span class="menu-title">用例概览</span>
+                <i class="glyphicon glyphicon-chevron-right"></i>
+            </a>
+            <div class="collapse in" id="testcases">
+                <ul>
+                    <li class="nav-item"> <a class="nav-link" href="/interface/allTemplate">接口参数配置模版</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/interface/allBasicTestCase">基础用例</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="/interface/customizeTestCase">自定义用例</a></li>
+                </ul>
+            </div>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/interface/testCaseReport">
+                <span class="menu-title">用例报告</span>
+                <i class="glyphicon glyphicon-align-left"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<div class="center">
+    <!--<h3 class="heading fl">面包屑导航预留</h3>-->
+    <!--{% if message %}-->
+        <!--<div class="alert alert-warning">{{ message }}</div>-->
+    <!--{% endif %}-->
+    <ul id="myTab" class="nav nav-tabs">
+        <li class="active">
+            <a href="#" data-toggle="tab" >项目接口组列表</a>
+        </li>
+        <!--<li><a href="#projectaction" data-toggle="tab">项目动态</a></li>-->
+    </ul>
+    <div id="myTabContent" class="tab-content">
+        <div class="project" id="project-all">
+            <div class="tab-pane fade in active" id="project-title">
+                <!--<div class="project-tips1" style="float:left">{{platform_name}} 分组共( {{ project_num}} )个项目</div>-->
+                <a href="/interface/addInterfaceGroup">
+                    <button type="button" class="btn btn-primary" style="float:right">添加接口组</button>
+                </a>
+                <!--<div class="checkbox" style="float:right">-->
+                    <!--<label>-->
+                        <!--<input id="checkbox" type="checkbox" onclick="onClickHander(this)">只展示我的项目</input>-->
+                    <!--</label>-->
+                <!--</div>-->
+            </div>
+        </div>
+        <!--<div class="tab-pane fade" id="projectaction">-->
+		    <!--<p>项目动态。。。。</p>-->
+	    <!--</div>-->
+
+    </div>
+    <div class="fixed-table-toolbar">
+        <div class="columns pull-left">
+            <input id="checkbox" type="checkbox" onclick="onClickHander(this)">只展示我添加的接口组</input>
+            <input id="search-keyword" placeholder="请输入接口组名称查询">
+            <button class="btn btn-primary" id="search-button" >查询</button>
+            <!--<a href="/interface/autoAddInterfaceGroup">-->
+                    <!--<button type="button" class="btn btn-primary" style="background-color:hsl(120,65%,75%)" onclick="update_interface_group_action()">自动抓取接口组</button>-->
+            <!--</a>-->
+            <button type="button" class="btn btn-primary" style="background-color:hsl(120,65%,75%)" onclick="auto_add_interface_group()">自动抓取接口组</button>
+        </div>
+        <!-- 修改数据模态框（Modal） -->
+        <form id ="update_interface_group_form" action="#" method="POST" class="form-horizontal" role="form">
+            {% csrf_token %}
+            <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                            </button>
+                            <h4 class="modal-title" id="updateModalLabel">
+                                修改接口组
+                            </h4>
+                        </div>
+                        {# 模态框body #}
+                        <!--<div class="modal-body" style="height: 100%;">-->
+                        <div class="modal-body" style="height: 100%;">
+                            <div class="form-group">
+                                <!--<label for="update_id" class="col-sm-3 control-label">序列号</label>-->
+                                <div class="col-sm-7" hidden="hidden">
+                                    <input type="text" class="form-control"  name="update_id" id="update_id">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_group_name" class="col-sm-3 control-label">接口组名称</label>
+                                <div class="col-sm-7">
+                                    <input type="text" class="form-control"  name="update_interface_group_name" id="update_interface_group_name" placeholder="请输入项目名称">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_project_category" class="col-sm-3 control-label">所属项目</label>
+                                <div class="col-sm-7">
+                                    <select data-placeholder="选择项目..." class="form-control" name="update_project_category" id="update_project_category"></select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="update_interface_group_desc" class="col-sm-3 control-label">接口组描述</label>
+                                <div class="col-sm-7">
+                                    <!--<input type="text" class="form-control"  maxlength="256" name="update_project_desc" id="update_project_desc" placeholder="请输入项目描述">-->
+                                    <Textarea class="form-control"  maxlength="256" name="update_interface_group_desc" id="update_interface_group_desc" placeholder="请输入项目描述"></Textarea>
+                                </div>
+                            </div>
+                        </div>
+                        {#模态框底部#}
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <input type="button" class="btn btn-primary" value="提交"  onclick="update_interface_group_action()"/>
+                            <!--<input type="submit" class="btn btn-primary" value="提交"/>-->
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+        </form>
+    </div>
+
+    <table id="mytable" class="table table-hover"></table>
+</div>
+<!--<div class="right"></div>-->
+
+
+
+    <!--<hr>-->
+    <!--<footer class="footer">-->
+        <!--<p>Copyright © Shuyun All Rights Reserved</p>-->
+    <!--</footer>-->
+<!--<footer class="footer">-->
+    <!--<p>Copyright © Shuyun All Rights Reserved.</p>-->
+<!--</footer>-->
+{% endblock %}
+
+{% block script%}
+
+<script type="text/javascript">
+    var checked=null;
+    $('#mytable').bootstrapTable({
+        url:"/interface/getInterfaceGroup",     //从后台获取数据时，可以是json数组，也可以是json对象
+        dataType: "json",
+        method: 'get',                      //请求方式（*）
+        //toolbar: '#toolbar',                //工具按钮用哪个容器
+        toolbar: '#exampleToolbar',
+        striped: true,                      //是否显示行间隔色
+        cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+        pagination: true,                   //是否显示分页（*）
+        sortable: true,                     //是否启用排序
+        //sortOrder: "asc",                   //排序方式
+        {#queryParams: oTableInit.queryParams,//传递参数（*）#}
+        sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）,数据为json数组时写client，json对象时（有total和rows时）这里要为server方式，写client列表无数据
+        pageNumber: 1,                       //初始化加载第一页，默认第一页
+        pageSize: 10,                       //每页的记录行数（*）
+        pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+        search: false,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+        strictSearch: true,
+        showColumns: true,                  //是否显示所有的列
+        showRefresh: true,                  //是否显示刷新按钮
+        minimumCountColumns: 2,             //最少允许的列数
+        clickToSelect: true,                //是否启用点击选中行
+        {#height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度#}
+        uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+        showToggle: false,                    //是否显示详细视图和列表视图的切换按钮
+        cardView: false,                    //是否显示详细视图
+        detailView: false,                   //是否显示父子表
+        idField: 'interface_group_name',          //指定主键
+        singleSelect: true,                //开启单选,想要获取被选中的行数据必须要有该参数
+
+        //得到查询的参数，会在url后面拼接，如：?rows=5&page=2&sortOrder=asc&search_kw=&_=1564105760651
+        queryParams: function (params) {
+            //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+            var query_params = {
+                rows: params.limit,                         //页面大小
+                page: (params.offset / params.limit) + 1,   //页码
+                sort: params.sort,      //排序列名
+                sortOrder: params.order, //排位命令（desc，asc
+
+                //查询框中的参数传递给后台
+                search_kw: $('#search-keyword').val(), // 请求时向服务端传递的参数
+                creator: checked,
+                };
+                console.log("query_params:", query_params,params)
+                return query_params;
+            },
+
+        columns: [
+            {
+                //checkbox:true  //第一列显示复选框
+                //singleSelect:true
+                field : 'checked',
+                checkbox : true,
+                visible: true,
+                formatter : stateFormatter
+            },
+            {
+                field: 'id',  //返回数据rows数组中的每个字典的键名与此处的field值要保持一致
+                title: '序列号'
+            },
+            {
+                field: 'interface_group_name',
+                title: '接口组名称'
+            },
+            {
+                field: 'interface_group_desc',
+                title: '接口组描述'
+            },
+            {
+                field: 'project_category',
+                title: '所属项目'
+            },
+            {
+                field: 'interface_group_creator',
+                title: '创建人',
+            }
+            ,
+            {
+                field: 'interface_group_create_time',
+                title: '创建时间'
+            },
+            {
+                field: 'operate',
+                title: '操作',
+                width: 120,
+                align: 'center',
+                valign: 'middle',
+                formatter: actionFormatter,
+            },
+        ],
+    });
+
+
+    function actionFormatter(value, row, index) {
+        var id = index;
+        var data = JSON.stringify(row);
+        var result = "";
+        <!--result += "<a href='javascript:;' class='btn btn-xs green' onclick=\"EditViewById('" + id + "', view='view')\" title='查看'><span class='glyphicon glyphicon-search'></span></a>";-->
+        {#result += "<a href='javascript:;' class='btn btn-xs blue' onclick=\"EditViewById('" + JSON.stringify(row) + "','" + id + "')\" title='编辑'><span class='glyphicon glyphicon-pencil'></span></a>";#}
+        result += "<a href='javascript:;' class='btn btn-xs blue' onclick=\"EditViewById('" + id + "')\" title='编辑'><span class='glyphicon glyphicon-pencil'></span></a>";
+        //result += "<a href='javascript:;' class='btn btn-xs blue' onclick=\"test('" + row + "','" + id + "')\" title='编辑'><span class='glyphicon glyphicon-pencil'></span></a>";
+        {#result += "<a href='javascript:;' class='btn btn-xs blue' onclick=\"edit()\" title='编辑'><span class='glyphicon glyphicon-pencil'></span></a>";#}
+        result += "<a href='javascript:;' class='btn btn-xs red' onclick=\"DeleteByIds('" + id + "')\" title='删除'><span class='glyphicon glyphicon-remove'></span></a>";
+        return result;
+    }
+
+    function stateFormatter(value, row, index) {
+        if (row.state == true)
+            return {
+                disabled : true,//设置是否可用
+                checked : true//设置选中
+            };
+        return value;
+    }
+
+
+
+    function edit(){
+        // 获取当前行
+        var row=$("#mytable").bootstrapTable('getSelections');
+        console.log("row[0]", row[0].project_name)
+        alert(row[0].id, row[0].project_name)
+    }
+
+    function DeleteByIds(index){
+        var data = JSON.stringify($("#mytable").bootstrapTable('getData'));
+        var data_json = JSON.parse(data); //data_json和data_json2一样都是json对象
+        console.log("data_json:", data_json);
+        console.log("index:", index);
+        console.log("deleteid:", data_json[index].id)
+        Ewin.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+                if (!e) {
+                    return;
+                }
+                $.ajaxSetup({
+                    data:{csrfmiddlewaretoken:'{{ csrf_token }}'}
+                })
+                $.ajax({
+                    type: "POST",
+                    url: "/interface/delInterfaceGroup",
+                    data: { "delete_id": data_json[index].id},
+                    async:false,
+                    success: function (data) {
+                        if (data.status == "success") {
+                            toastr.success('删除数据成功');
+                            $("#mytable").bootstrapTable('refresh');
+                            //window.location.reload();//刷新当前页面
+                        }
+                    },
+                    error: function (data) {
+                        toastr.error('删除失败',data.status);
+                    },
+                    dataType : "json"
+                });
+            });
+    }
+
+    function EditViewById(index){
+        $("#update_project_category").empty()
+        var data = JSON.stringify($("#mytable").bootstrapTable('getData')); //获取全部数据
+        var data_json = JSON.parse(data); //data_json和data_json2一样都是json对象
+        console.log("data_json:", data_json);
+        console.log("index:", index);
+        //根据index找到对应行数据，填充数据到修改模态框
+        $("#update_id").val(data_json[index].id);
+        $("#update_interface_group_name").val(data_json[index].interface_group_name);
+        $("#update_interface_group_desc").val(data_json[index].interface_group_desc);
+        console.log("id is:",data_json[index].id)
+        project_category = {}
+        $.get("/interface/getProjectCategory",
+            function(resultDict)
+            {
+                project_category = resultDict;
+                console.log("project_category1", project_category)
+                var update_project_category_value = null;
+                for(var key in project_category)
+                if(project_category[key] == data_json[index].project_category)
+                {
+                    update_project_category_value = "<option value='" + key + "' selected=selected>" + data_json[index].project_category + "</option>";
+                    $("#update_project_category").append(update_project_category_value);
+                }
+                else
+                {
+                    update_project_category_value = "<option value='" + key + "'>" + project_category[key] + "</option>";
+                    $("#update_project_category").append(update_project_category_value);
+                }
+            },
+            "json"
+        );
+        //弹出修改模态框，非新增模态框
+        $('#updateModal').modal('show')
+    }
+
+    function auto_add_interface_group(){
+        $.ajaxSetup({
+                    data:{csrfmiddlewaretoken:'{{ csrf_token }}'}
+                })
+        $.ajax({
+            cache:false,
+            type: "POST",//方法类型
+            dataType: "json",//预期服务器返回的数据类型
+            url: "/interface/autoAddInterfaceGroup" ,
+            async:false,
+            success: function (data) {
+                if(data.msg == "success"){
+                    toastr.success('抓取接口组数据成功');
+                    {#刷新表格数据#}
+                    $("#mytable").bootstrapTable('refresh');
+                }
+            },
+            error: function() {
+                toastr.error(data.msg)
+            }
+        });
+    }
+
+    // 搜索查询按钮触发事件
+    $(function() {
+        $("#search-button").click(function () {
+        $('#mytable').bootstrapTable(('refresh')); // 很重要的一步，刷新url！
+        $('#search-keyword').val()
+        })
+    })
+
+    //重置搜索条件
+    function clean(){
+        //先清空
+        $('#search-keyword').val('');
+        //清空后查询条件为空了，再次刷新页面，就是全部数据了
+        $('#mytable').bootstrapTable(('refresh')); // 很重要的一步，刷新url！
+    }
+    //搜索我的项目
+    function onClickHander(obj){
+        if(obj.checked){
+            checked="checked"
+
+        }
+        else{
+            checked=null
+        }
+
+    }
+    //名称重复或者异常场景
+    function alertFunction(data){
+	    alert(data);
+    }
+    {% if msg == 'success' %}
+        alertFunction("{{ msg }}")
+    {% endif %}
+
+
+</script>
+<script type="text/javascript">
+    {#设置弹出提示框属性#}
+    toastr.options = { // toastr配置
+        "closeButton": true, //是否显示关闭按钮
+        "debug": false, //是否使用debug模式
+        "progressBar": true, //是否显示进度条，当为false时候不显示；当为true时候，显示进度条，当进度条缩短到0时候，消息通知弹窗消失
+        "positionClass": "toast-top-center",//显示的动画时间
+        "showDuration": "400", //显示的动画时间
+        "hideDuration": "1000", //消失的动画时间
+        "timeOut": "7000", //展现时间
+        "extendedTimeOut": "1000", //加长展示时间
+        "showEasing": "swing", //显示时的动画缓冲方式
+        "hideEasing": "linear", //消失时的动画缓冲方式
+        "showMethod": "fadeIn", //显示时的动画方式
+        "hideMethod": "fadeOut" //消失时的动画方式
+    }
+
+
+    {#提交数据函数#}
+    function update_interface_group_action() {
+        $.ajax({
+            cache:false,
+            type: "POST",//方法类型
+            dataType: "json",//预期服务器返回的数据类型
+            url: "/interface/editInterfaceGroup" ,//url
+            data: $('#update_interface_group_form').serialize(), //将模态框的form表单数据序列化，以便提交到后台
+            async:false,
+
+            success: function (data) {
+                if(data.msg == "success"){
+                    {#关闭模态框并清除框内数据，否则下次打开还是上次的数据#}
+                    document.getElementById("update_interface_group_form").reset();
+                    $('#updateModal').modal('hide');
+                    toastr.success('提交数据成功');
+
+                    <!--window.event.returnValue = false;-->
+                    <!--window.event.returnValue = true;-->
+
+                    {#刷新表格数据#}
+                    $("#mytable").bootstrapTable('refresh');
+                }
+                else if(data.msg == "duplicate") {
+                    toastr.warning('项目名称重复');
+                }
+                else{
+                    toastr.error('保存失败')
+                }
+            },
+            error: function() {
+                toastr.error("请输入所有数据")
+            }
+        });
+    }
+</script>
+<script type="text/javascript">
+    (function ($) {
+
+    window.Ewin = function () {
+        var html = '<div id="[Id]" class="modal fade" role="dialog" aria-labelledby="modalLabel">' +
+                              '<div class="modal-dialog modal-sm">' +
+                                  '<div class="modal-content">' +
+                                      '<div class="modal-header">' +
+                                          '<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
+                                          '<h4 class="modal-title" id="modalLabel">[Title]</h4>' +
+                                      '</div>' +
+                                      '<div class="modal-body">' +
+                                      '<p>[Message]</p>' +
+                                      '</div>' +
+                                       '<div class="modal-footer">' +
+        '<button type="button" class="btn btn-default cancel" data-dismiss="modal">[BtnCancel]</button>' +
+        '<button type="button" class="btn btn-primary ok" data-dismiss="modal">[BtnOk]</button>' +
+    '</div>' +
+                                  '</div>' +
+                              '</div>' +
+                          '</div>';
+
+
+        var dialogdHtml = '<div id="[Id]" class="modal fade" role="dialog" aria-labelledby="modalLabel">' +
+                              '<div class="modal-dialog">' +
+                                  '<div class="modal-content">' +
+                                      '<div class="modal-header">' +
+                                          '<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
+                                          '<h4 class="modal-title" id="modalLabel">[Title]</h4>' +
+                                      '</div>' +
+                                      '<div class="modal-body">' +
+                                      '</div>' +
+                                  '</div>' +
+                              '</div>' +
+                          '</div>';
+        var reg = new RegExp("\\[([^\\[\\]]*?)\\]", 'igm');
+        var generateId = function () {
+            var date = new Date();
+            return 'mdl' + date.valueOf();
+        }
+        var init = function (options) {
+            options = $.extend({}, {
+                title: "操作提示",
+                message: "提示内容",
+                btnok: "确定",
+                btncl: "取消",
+                width: 200,
+                auto: false
+            }, options || {});
+            var modalId = generateId();
+            var content = html.replace(reg, function (node, key) {
+                return {
+                    Id: modalId,
+                    Title: options.title,
+                    Message: options.message,
+                    BtnOk: options.btnok,
+                    BtnCancel: options.btncl
+                }[key];
+            });
+            $('body').append(content);
+            $('#' + modalId).modal({
+                width: options.width,
+                backdrop: 'static'
+            });
+            $('#' + modalId).on('hide.bs.modal', function (e) {
+                $('body').find('#' + modalId).remove();
+            });
+            return modalId;
+        }
+
+        return {
+            alert: function (options) {
+                if (typeof options == 'string') {
+                    options = {
+                        message: options
+                    };
+                }
+                var id = init(options);
+                var modal = $('#' + id);
+                modal.find('.ok').removeClass('btn-success').addClass('btn-primary');
+                modal.find('.cancel').hide();
+
+                return {
+                    id: id,
+                    on: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            modal.find('.ok').click(function () { callback(true); });
+                        }
+                    },
+                    hide: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            modal.on('hide.bs.modal', function (e) {
+                                callback(e);
+                            });
+                        }
+                    }
+                };
+            },
+            confirm: function (options) {
+                var id = init(options);
+                var modal = $('#' + id);
+                modal.find('.ok').removeClass('btn-primary').addClass('btn-success');
+                modal.find('.cancel').show();
+                return {
+                    id: id,
+                    on: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            modal.find('.ok').click(function () { callback(true); });
+                            modal.find('.cancel').click(function () { callback(false); });
+                        }
+                    },
+                    hide: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            modal.on('hide.bs.modal', function (e) {
+                                callback(e);
+                            });
+                        }
+                    }
+                };
+            },
+            dialog: function (options) {
+                options = $.extend({}, {
+                    title: 'title',
+                    url: '',
+                    width: 800,
+                    height: 550,
+                    onReady: function () { },
+                    onShown: function (e) { }
+                }, options || {});
+                var modalId = generateId();
+
+                var content = dialogdHtml.replace(reg, function (node, key) {
+                    return {
+                        Id: modalId,
+                        Title: options.title
+                    }[key];
+                });
+                $('body').append(content);
+                var target = $('#' + modalId);
+                target.find('.modal-body').load(options.url);
+                if (options.onReady())
+                    options.onReady.call(target);
+                target.modal();
+                target.on('shown.bs.modal', function (e) {
+                    if (options.onReady(e))
+                        options.onReady.call(target, e);
+                });
+                target.on('hide.bs.modal', function (e) {
+                    $('body').find(target).remove();
+                });
+            }
+        }
+    }();
+})(jQuery);
+
+</script>
+
+{% endblock %}

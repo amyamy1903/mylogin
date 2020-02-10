@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}新建接口组{% endblock %}
+{% block css %}
+    <link href="{% static 'css/interface/add-project-style.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+        <div class="col-md-10 col-md-offset-1">
+          <form class='form-interface-group-add' action="/interface/addInterfaceGroup" method="POST">
+              {% csrf_token %}
+              <!--<h2 class="text-center">新建项目</h2>-->
+              <div class="form-group addRedStar" >
+                  {{ interface_group_form.interface_group_name.label_tag }}
+                  {{ interface_group_form.interface_group_name }}
+              </div>
+
+              <div class="form-group addRedStar">
+                  {{ interface_group_form.project_category.label_tag }}
+                  {{ interface_group_form.project_category }}
+              </div>
+              <div class="form-group">
+                  {{ interface_group_form.interface_group_desc.label_tag }}
+                  {{ interface_group_form.interface_group_desc }}
+              </div>
+              <button type="submit" class="btn btn-primary pull-left">新建接口组</button>
+              <!--<button type="submit" class="btn btn-default pull-right">取消</button>-->
+              <span class="btn btn-primary pull-right" id="addInterfaceGroupCancel" onclick="navigate_html()">取消</span>
+          </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    function alertFunction(data){
+	    alert(data);
+    }
+    {% if message %}
+       alertFunction("{{ message }}")
+    {% endif %}
+    function navigate_html() {
+        window.location.href="interfaceGroup";
+    }
+</script>
+{% endblock%}
+

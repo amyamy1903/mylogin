@@ -1,0 +1,96 @@
+.sidebar {
+    padding: 9px;
+    float: left;
+    width: 150px;
+    background-color: #EFEFEF;
+    //background-color: #4D4D4D;
+    background-repeat:repeat;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    font: 14px;
+}
+
+.center{
+    margin-left:190px;
+    //width:1150px;
+    margin-right:40px;
+}
+
+.sidebar .nav .nav-item.active {
+  background: #ffffff;白色
+  //background: red;
+  //蓝色：background: #2D89EF;
+  //color: #FFFFFF;
+  //background:#bba8bff5;
+}
+
+
+.sidebar .nav .nav-item .nav-link:hover{
+    background-color: #bba8bff5;
+    padding-top:10px;
+	padding-bottom:10px;
+	padding-right:20px;
+	padding-left:20px;
+}
+.sidebar .nav .nav-item .nav-link:active{
+    background-color: #bba8bff5;
+    padding-top:10px;
+	padding-bottom:10px;
+	padding-right:20px;
+	padding-left:20px;
+}
+
+.center .nav-tabs {
+    height:42px;
+}
+
+.center .fixed-table-toolbar {
+    height:54px;
+}
+
+/*
+.center .tab-content {
+    height:100px;
+    background-color: #EFEFEF;
+
+}
+*/
+
+.center .tab-content .project #project-title{
+    padding:30px;
+    height:120px;
+    background-color: #BEBFC3;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    font: 14px;
+
+}
+
+.center #interfaceListTitle{
+    padding:10px 0px 10px 0px;
+    height:50px;
+    //background-color: #BEBFC3;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    font: 14px;
+
+}
+
+.addRedStar:before {
+    content: '*';
+    color: red;
+    font-size: 18px;
+}
+
+
+/*
+.right {
+    float: right;
+    //width: 100px;
+    background: blue;
+}*/
+
+#mytable  thead{background: #5488c4;}
